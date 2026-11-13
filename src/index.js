@@ -1,16 +1,6 @@
 
 export default {
   async fetch(request, env) {
-    const corsHeaders = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type"
-    };
-
-    if (request.method === "OPTIONS") {
-      return new Response(null, { headers: corsHeaders });
-    }
-
     const url = new URL(request.url);
 
     if (url.pathname === "/api/data" && request.method === "GET") {
@@ -18,25 +8,29 @@ export default {
         "SELECT key, value FROM settings"
       ).all();
 
-      return Response.json(result.results, {
-        headers: corsHeaders
-      });
+      return Response.json(result.results);
     }
 
     if (url.pathname === "/api/data" && request.method === "POST") {
       const data = await request.json();
 
-      await env.DB.prepare(
-        "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
-      ).bind(data.key, JSON.stringify(data.value)).run();
+      if (!data.key || data.value === undefined) {
+        return Response.json(
+          { error: "Invalid data" },
+          { status: 400 }
+        );
+      }
 
-      return Response.json({ success: true }, {
-        headers: corsHeaders
-      });
+      await env.DB.prepare(`
+        INSERT INTO settings (key, value)
+        VALUES (?, ?)
+        ON CONFLICT(key)
+        DO UPDATE SET value = excluded.value
+      `).bind(data.key, JSON.stringify(data.value)).run();
+
+      return Response.json({ success: true });
     }
 
-    return new Response("NEXUS OS API online", {
-      headers: corsHeaders
-    });
+    return env.ASSETS.fetch(request);
   }
 };
