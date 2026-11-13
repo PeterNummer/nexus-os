@@ -1,4 +1,3 @@
-
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "nexus-os",
@@ -11,6 +10,7 @@
   "d1_databases": [
     {
       "binding": "DB",
+      "database_name": "nexus-os-db",
       "database_id": "c516563c-f116-4e44-ae7d-11c6e3c3575c"
     }
   ]
