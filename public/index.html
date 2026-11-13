@@ -639,6 +639,7 @@ function makeDraggable(win, app) {
 }
 
 
+
 async function setBackground(number, save = true) {
 
     const backgrounds = {
@@ -651,10 +652,8 @@ async function setBackground(number, save = true) {
 
     document.body.style.background = backgrounds[number];
 
-    // Lokale Sicherung
     localStorage.setItem("nexusBackground", number);
 
-    // In Cloudflare speichern
     if (save) {
         try {
             const response = await fetch("/api/data", {
@@ -669,16 +668,17 @@ async function setBackground(number, save = true) {
             });
 
             if (!response.ok) {
-                throw new Error("Cloud-Speicherung fehlgeschlagen");
+                throw new Error("HTTP " + response.status);
             }
 
-            console.log("NEXUS OS: Einstellung in der Cloud gespeichert.");
+            console.log("NEXUS OS: Hintergrund erfolgreich gespeichert.");
 
         } catch (error) {
-            console.error("Cloud-Speicherfehler:", error);
+            console.error("NEXUS OS: Speichern fehlgeschlagen:", error);
         }
     }
 }
+
 
 
 
