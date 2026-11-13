@@ -680,54 +680,35 @@ async function setBackground(number, save = true) {
 }
 
 
-
-
 async function loadCloudSettings() {
-
     try {
         const response = await fetch("/api/data");
+        const data = await response.json();
 
-        if (!response.ok) {
-            throw new Error("Cloud-Daten konnten nicht geladen werden.");
-        }
-
-        const settings = await response.json();
-
-        const background = settings.find(
+        const background = data.find(
             item => item.key === "nexusBackground"
         );
 
         if (background) {
-
-            const value = typeof background.value === "string"
-                ? JSON.parse(background.value)
-                : background.value;
-
-            setBackground(Number(value), false);
-
-            console.log("NEXUS OS: Cloud-Einstellungen geladen.");
-
+            const number = Number(background.value);
+            setBackground(number, false);
         } else {
+            const saved = localStorage.getItem("nexusBackground");
 
-            const local = localStorage.getItem("nexusBackground");
-
-            if (local) {
-                await setBackground(Number(local), true);
+            if (saved) {
+                setBackground(Number(saved), true);
             }
         }
-
     } catch (error) {
+        console.error("Cloud-Einstellungen konnten nicht geladen werden:", error);
 
-        console.error("NEXUS OS Cloud:", error);
+        const saved = localStorage.getItem("nexusBackground");
 
-        const local = localStorage.getItem("nexusBackground");
-
-        if (local) {
-            setBackground(Number(local), false);
+        if (saved) {
+            setBackground(Number(saved), false);
         }
     }
 }
-
 
 
 function navigateWeb() {
@@ -818,7 +799,6 @@ function updateClock() {
 loadCloudSettings();
 
 updateClock();
-
 setInterval(updateClock, 1000);
 
 </script>
