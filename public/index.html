@@ -223,14 +223,191 @@ body {
     border-radius: 8px;
 }
 
+/* ANMELDEBEREICH */
+
+.auth-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 20000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background:
+        radial-gradient(circle at top, #244c7d, transparent 55%),
+        linear-gradient(135deg, #07111f, #101b3c);
+}
+
+.auth-panel {
+    width: min(420px, 100%);
+    padding: 35px;
+    text-align: center;
+    background: #17243bf2;
+    border: 1px solid #ffffff30;
+    border-radius: 18px;
+    box-shadow: 0 20px 70px #0009;
+}
+
+.auth-logo {
+    font-size: 55px;
+    color: #56b4ff;
+}
+
+.auth-panel h1 {
+    letter-spacing: 5px;
+    margin-bottom: 5px;
+}
+
+.auth-panel p {
+    color: #b9c8dd;
+}
+
+.auth-panel form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.auth-panel input {
+    width: 100%;
+    padding: 14px;
+    color: white;
+    background: #0b1729;
+    border: 1px solid #ffffff30;
+    border-radius: 8px;
+    outline: none;
+    margin: 0;
+}
+
+.auth-panel input:focus {
+    border-color: #56b4ff;
+}
+
+.auth-panel form button {
+    padding: 14px;
+    color: white;
+    background: #1676c5;
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.auth-panel form button:hover {
+    background: #258fe5;
+}
+
+.auth-panel form button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.auth-switch {
+    margin-top: 20px;
+    background: transparent;
+    border: 0;
+    color: #70bdff;
+    cursor: pointer;
+}
+
+.auth-error {
+    min-height: 20px;
+    color: #ff8585 !important;
+    font-size: 13px;
+}
+
+#accountInfo {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #ffffff25;
+    font-size: 13px;
+    color: #c5d5e9;
+}
+
+#logoutButton {
+    margin-top: 10px;
+    padding: 9px 14px;
+    color: white;
+    background: #9b3434;
+    border: 0;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+/* DESKTOP NUR NACH LOGIN */
+
+body:not(.authenticated) .desktop,
+body:not(.authenticated) .taskbar,
+body:not(.authenticated) .start-menu {
+    display: none;
+}
+
+body.authenticated #authScreen {
+    display: none;
+}
+
 @media(max-width:600px) {
     .clock { display: none; }
     .window { width: 94vw; }
+    .auth-panel { padding: 25px; }
 }
 </style>
 </head>
 
 <body>
+
+<!-- LOGIN UND REGISTRIERUNG -->
+
+<div id="authScreen" class="auth-screen">
+    <div class="auth-panel">
+
+        <div class="auth-logo">◈</div>
+
+        <h1>NEXUS OS</h1>
+
+        <p id="authSubtitle">
+            Melde dich bei deinem NEXUS-Konto an.
+        </p>
+
+        <form id="authForm">
+
+            <input
+                id="authUsername"
+                type="text"
+                placeholder="Benutzername"
+                minlength="3"
+                maxlength="20"
+                autocomplete="username"
+                required
+            >
+
+            <input
+                id="authPassword"
+                type="password"
+                placeholder="Passwort"
+                minlength="8"
+                maxlength="128"
+                autocomplete="current-password"
+                required
+            >
+
+            <button id="authSubmit" type="submit">
+                Anmelden
+            </button>
+
+        </form>
+
+        <p id="authError" class="auth-error"></p>
+
+        <button class="auth-switch" id="authSwitch" type="button">
+            Noch kein Konto? Registrieren
+        </button>
+
+    </div>
+</div>
+
+<!-- DESKTOP -->
 
 <div class="desktop">
 
@@ -256,18 +433,49 @@ body {
 
 </div>
 
+<!-- STARTMENÜ -->
+
 <div class="start-menu" id="startMenu">
+
     <h2>NEXUS OS</h2>
     <p>Angeheftete Apps</p>
 
     <div class="app-grid">
-        <button class="app-item" onclick="openApp('files')">📁<br>Dateien</button>
-        <button class="app-item" onclick="openApp('browser')">🌐<br>Browser</button>
-        <button class="app-item" onclick="openApp('settings')">⚙️<br>Einstellungen</button>
-        <button class="app-item" onclick="openApp('terminal')">⌨️<br>Terminal</button>
-        <button class="app-item" onclick="openApp('about')">💻<br>Über NEXUS</button>
+
+        <button class="app-item" onclick="openApp('files')">
+            📁<br>Dateien
+        </button>
+
+        <button class="app-item" onclick="openApp('browser')">
+            🌐<br>Browser
+        </button>
+
+        <button class="app-item" onclick="openApp('settings')">
+            ⚙️<br>Einstellungen
+        </button>
+
+        <button class="app-item" onclick="openApp('terminal')">
+            ⌨️<br>Terminal
+        </button>
+
+        <button class="app-item" onclick="openApp('about')">
+            💻<br>Über NEXUS
+        </button>
+
     </div>
+
+    <div id="accountInfo">
+        Angemeldet als:
+        <strong id="accountUsername"></strong>
+        <br>
+        <button id="logoutButton" onclick="logout()">
+            Abmelden
+        </button>
+    </div>
+
 </div>
+
+<!-- TASKLEISTE -->
 
 <div class="taskbar">
 
@@ -276,27 +484,174 @@ body {
     <div class="open-apps" id="openApps"></div>
 
     <div class="clock" id="clock"></div>
+
 </div>
 
 <script>
+
+/* ==================================
+   ANMELDUNG UND BENUTZERKONTEN
+================================== */
+
+let authMode = "login";
+
+function setAuthMode(mode) {
+    authMode = mode;
+
+    document.getElementById("authSubtitle").textContent =
+        mode === "login"
+            ? "Melde dich bei deinem NEXUS-Konto an."
+            : "Erstelle dein persönliches NEXUS-Konto.";
+
+    document.getElementById("authSubmit").textContent =
+        mode === "login" ? "Anmelden" : "Konto erstellen";
+
+    document.getElementById("authSwitch").textContent =
+        mode === "login"
+            ? "Noch kein Konto? Registrieren"
+            : "Du hast schon ein Konto? Anmelden";
+
+    document.getElementById("authPassword").autocomplete =
+        mode === "login" ? "current-password" : "new-password";
+
+    document.getElementById("authError").textContent = "";
+}
+
+document.getElementById("authSwitch").addEventListener("click", () => {
+    setAuthMode(authMode === "login" ? "register" : "login");
+});
+
+document.getElementById("authForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const username = document.getElementById("authUsername").value.trim();
+    const password = document.getElementById("authPassword").value;
+
+    const errorElement = document.getElementById("authError");
+    const submitButton = document.getElementById("authSubmit");
+
+    errorElement.textContent = "";
+    submitButton.disabled = true;
+    submitButton.textContent = "Bitte warten ...";
+
+    try {
+        const response = await fetch(
+            authMode === "login"
+                ? "/api/auth/login"
+                : "/api/auth/register",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    username,
+                    password
+                })
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.error || "Anmeldung fehlgeschlagen."
+            );
+        }
+
+        await enterDesktop(result.username);
+
+    } catch (error) {
+        errorElement.textContent = error.message;
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent =
+            authMode === "login"
+                ? "Anmelden"
+                : "Konto erstellen";
+    }
+});
+
+async function enterDesktop(username) {
+    document.body.classList.add("authenticated");
+
+    document.getElementById("accountUsername").textContent = username;
+
+    await loadCloudSettings();
+}
+
+async function checkLogin() {
+    try {
+        const response = await fetch("/api/auth/me", {
+            credentials: "same-origin"
+        });
+
+        const result = await response.json();
+
+        if (result.authenticated) {
+            await enterDesktop(result.username);
+        } else {
+            document.body.classList.remove("authenticated");
+        }
+
+    } catch (error) {
+        console.error("Login konnte nicht geprüft werden:", error);
+
+        document.getElementById("authError").textContent =
+            "Verbindung zum NEXUS-Server fehlgeschlagen.";
+    }
+}
+
+async function logout() {
+    try {
+        await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "same-origin"
+        });
+
+    } catch (error) {
+        console.error("Logout fehlgeschlagen:", error);
+
+    } finally {
+        Object.keys(windows).forEach(closeWindow);
+
+        document.body.classList.remove("authenticated");
+
+        document.getElementById("startMenu").style.display = "none";
+        document.getElementById("authPassword").value = "";
+        document.getElementById("authError").textContent = "";
+
+        setAuthMode("login");
+    }
+}
+
+
+/* ==================================
+   APPS
+================================== */
 
 const apps = {
     files: {
         title: "Dateimanager",
         icon: "📁"
     },
+
     browser: {
         title: "NEXUS Browser",
         icon: "🌐"
     },
+
     settings: {
         title: "Einstellungen",
         icon: "⚙️"
     },
+
     terminal: {
         title: "NEXUS Terminal",
         icon: "⌨️"
     },
+
     about: {
         title: "Über NEXUS OS",
         icon: "💻"
@@ -362,9 +717,11 @@ function getAppContent(app) {
 
                 <span>NEXUS&gt; </span>
 
-                <input id="terminalInput"
+                <input
+                    id="terminalInput"
                     placeholder="Befehl..."
-                    onkeydown="if(event.key==='Enter') runCommand()">
+                    onkeydown="if(event.key==='Enter') runCommand()"
+                >
             </div>
         `;
     }
@@ -381,11 +738,14 @@ function getAppContent(app) {
     return "";
 }
 
+
+/* ==================================
+   FENSTERVERWALTUNG
+================================== */
+
 function openApp(app) {
 
     document.getElementById("startMenu").style.display = "none";
-
-    // Bereits geöffnetes Fenster wiederverwenden
 
     if (windows[app]) {
         restoreWindow(app);
@@ -545,6 +905,7 @@ function closeWindow(app) {
 function maximizeWindow(app) {
 
     const data = windows[app];
+
     if (!data) return;
 
     const win = data.element;
@@ -639,6 +1000,9 @@ function makeDraggable(win, app) {
 }
 
 
+/* ==================================
+   CLOUD-EINSTELLUNGEN
+================================== */
 
 async function setBackground(number, save = true) {
 
@@ -652,12 +1016,11 @@ async function setBackground(number, save = true) {
 
     document.body.style.background = backgrounds[number];
 
-    localStorage.setItem("nexusBackground", number);
-
     if (save) {
         try {
             const response = await fetch("/api/data", {
                 method: "POST",
+                credentials: "same-origin",
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -671,18 +1034,25 @@ async function setBackground(number, save = true) {
                 throw new Error("HTTP " + response.status);
             }
 
-            console.log("NEXUS OS: Hintergrund erfolgreich gespeichert.");
+            console.log("NEXUS OS: Hintergrund gespeichert.");
 
         } catch (error) {
-            console.error("NEXUS OS: Speichern fehlgeschlagen:", error);
+            console.error("Speichern fehlgeschlagen:", error);
         }
     }
 }
 
-
 async function loadCloudSettings() {
+
     try {
-        const response = await fetch("/api/data");
+        const response = await fetch("/api/data", {
+            credentials: "same-origin"
+        });
+
+        if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+        }
+
         const data = await response.json();
 
         const background = data.find(
@@ -690,26 +1060,25 @@ async function loadCloudSettings() {
         );
 
         if (background) {
-            const number = Number(background.value);
-            setBackground(number, false);
+            setBackground(Number(background.value), false);
         } else {
-            const saved = localStorage.getItem("nexusBackground");
-
-            if (saved) {
-                setBackground(Number(saved), true);
-            }
+            setBackground(1, false);
         }
+
     } catch (error) {
-        console.error("Cloud-Einstellungen konnten nicht geladen werden:", error);
+        console.error(
+            "Cloud-Einstellungen konnten nicht geladen werden:",
+            error
+        );
 
-        const saved = localStorage.getItem("nexusBackground");
-
-        if (saved) {
-            setBackground(Number(saved), false);
-        }
+        setBackground(1, false);
     }
 }
 
+
+/* ==================================
+   BROWSER
+================================== */
 
 function navigateWeb() {
 
@@ -736,6 +1105,11 @@ function navigateWeb() {
         alert("Ungültige Webadresse.");
     }
 }
+
+
+/* ==================================
+   TERMINAL
+================================== */
 
 function runCommand() {
 
@@ -774,6 +1148,7 @@ function runCommand() {
     }
 
     const line = document.createElement("div");
+
     line.textContent = "NEXUS> " + command + " | " + result;
 
     output.appendChild(line);
@@ -783,6 +1158,11 @@ function runCommand() {
     output.parentElement.scrollTop =
         output.parentElement.scrollHeight;
 }
+
+
+/* ==================================
+   UHR
+================================== */
 
 function updateClock() {
 
@@ -796,9 +1176,15 @@ function updateClock() {
         now.toLocaleDateString("de-DE");
 }
 
-loadCloudSettings();
+
+/* ==================================
+   SYSTEMSTART
+================================== */
+
+checkLogin();
 
 updateClock();
+
 setInterval(updateClock, 1000);
 
 </script>
