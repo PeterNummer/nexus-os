@@ -236,6 +236,7 @@ body {
     background:
         radial-gradient(circle at top, #244c7d, transparent 55%),
         linear-gradient(135deg, #07111f, #101b3c);
+    overflow-y: auto;
 }
 
 .auth-panel {
@@ -246,6 +247,7 @@ body {
     border: 1px solid #ffffff30;
     border-radius: 18px;
     box-shadow: 0 20px 70px #0009;
+    margin: auto;
 }
 
 .auth-logo {
@@ -269,7 +271,8 @@ body {
     margin-top: 25px;
 }
 
-.auth-panel input {
+.auth-panel input,
+.auth-panel select {
     width: 100%;
     padding: 14px;
     color: white;
@@ -280,7 +283,8 @@ body {
     margin: 0;
 }
 
-.auth-panel input:focus {
+.auth-panel input:focus,
+.auth-panel select:focus {
     border-color: #56b4ff;
 }
 
@@ -315,6 +319,31 @@ body {
     min-height: 20px;
     color: #ff8585 !important;
     font-size: 13px;
+}
+
+.auth-extra {
+    display: none;
+}
+
+.auth-help {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #b9c8dd;
+}
+
+.secret-box {
+    padding: 12px;
+    margin: 10px 0;
+    background: #07111f;
+    border: 1px solid #56b4ff;
+    border-radius: 8px;
+    overflow-wrap: anywhere;
+    user-select: text;
+}
+
+.secret-box code {
+    color: #70bdff;
+    font-size: 14px;
 }
 
 #accountInfo {
@@ -390,6 +419,51 @@ body.authenticated #authScreen {
                 maxlength="128"
                 autocomplete="current-password"
                 required
+            >
+
+            <select id="authMethod" class="auth-extra">
+                <option value="authenticator">
+                    Authenticator verwenden
+                </option>
+                <option value="invite">
+                    Einladungscode verwenden
+                </option>
+            </select>
+
+            <input
+                id="inviteCode"
+                class="auth-extra"
+                type="password"
+                placeholder="Einladungscode"
+                autocomplete="off"
+            >
+
+            <div id="authSetup" class="auth-extra">
+
+                <p class="auth-help">
+                    Kopiere diesen Schlüssel in deine Authenticator-Website.
+                    Wähle dort TOTP, SHA1, 6 Stellen und 30 Sekunden.
+                </p>
+
+                <div class="secret-box">
+                    <code id="authSecret"></code>
+                </div>
+
+                <button type="button" onclick="copyAuthSecret()">
+                    Schlüssel kopieren
+                </button>
+
+            </div>
+
+            <input
+                id="authCode"
+                class="auth-extra"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]{6}"
+                maxlength="6"
+                placeholder="Sechsstelliger Authenticator-Code"
+                autocomplete="one-time-code"
             >
 
             <button id="authSubmit" type="submit">
@@ -494,16 +568,28 @@ body.authenticated #authScreen {
 ================================== */
 
 let authMode = "login";
+let authSetupPending = false;
+
+const authUsername = document.getElementById("authUsername");
+const authPassword = document.getElementById("authPassword");
+const authMethod = document.getElementById("authMethod");
+const inviteCode = document.getElementById("inviteCode");
+const authCode = document.getElementById("authCode");
+const authSetup = document.getElementById("authSetup");
+const authSecret = document.getElementById("authSecret");
+const authError = document.getElementById("authError");
+const authSubmit = document.getElementById("authSubmit");
 
 function setAuthMode(mode) {
     authMode = mode;
+    authSetupPending = false;
 
     document.getElementById("authSubtitle").textContent =
         mode === "login"
             ? "Melde dich bei deinem NEXUS-Konto an."
             : "Erstelle dein persönliches NEXUS-Konto.";
 
-    document.getElementById("authSubmit").textContent =
+    authSubmit.textContent =
         mode === "login" ? "Anmelden" : "Konto erstellen";
 
     document.getElementById("authSwitch").textContent =
@@ -511,35 +597,151 @@ function setAuthMode(mode) {
             ? "Noch kein Konto? Registrieren"
             : "Du hast schon ein Konto? Anmelden";
 
-    document.getElementById("authPassword").autocomplete =
+    authPassword.autocomplete =
         mode === "login" ? "current-password" : "new-password";
 
-    document.getElementById("authError").textContent = "";
+    authMethod.style.display =
+        mode === "register" ? "block" : "none";
+
+    inviteCode.style.display = "none";
+    authSetup.style.display = "none";
+    authCode.style.display = "none";
+
+    inviteCode.value = "";
+    authCode.value = "";
+    authSecret.textContent = "";
+
+    authError.textContent = "";
+    authError.style.color = "#ff8585";
 }
+
+authMethod.addEventListener("change", () => {
+    authSetupPending = false;
+    authSetup.style.display = "none";
+    authCode.style.display = "none";
+    authCode.value = "";
+    authSecret.textContent = "";
+
+    inviteCode.style.display =
+        authMethod.value === "invite" ? "block" : "none";
+
+    authSubmit.textContent = "Konto erstellen";
+    authError.textContent = "";
+});
 
 document.getElementById("authSwitch").addEventListener("click", () => {
     setAuthMode(authMode === "login" ? "register" : "login");
 });
 
-document.getElementById("authForm").addEventListener("submit", async event => {
-    event.preventDefault();
-
-    const username = document.getElementById("authUsername").value.trim();
-    const password = document.getElementById("authPassword").value;
-
-    const errorElement = document.getElementById("authError");
-    const submitButton = document.getElementById("authSubmit");
-
-    errorElement.textContent = "";
-    submitButton.disabled = true;
-    submitButton.textContent = "Bitte warten ...";
-
+async function copyAuthSecret() {
     try {
-        const response = await fetch(
-            authMode === "login"
-                ? "/api/auth/login"
-                : "/api/auth/register",
-            {
+        await navigator.clipboard.writeText(authSecret.textContent);
+        authError.style.color = "#70ffad";
+        authError.textContent = "Schlüssel kopiert.";
+    } catch {
+        authError.style.color = "#ff8585";
+        authError.textContent =
+            "Kopieren nicht möglich. Bitte markiere den Schlüssel manuell.";
+    }
+}
+
+document.getElementById("authForm").addEventListener(
+    "submit",
+    async event => {
+        event.preventDefault();
+
+        const username = authUsername.value.trim();
+        const password = authPassword.value;
+
+        authError.style.color = "#ff8585";
+        authError.textContent = "";
+
+        authSubmit.disabled = true;
+        authSubmit.textContent = "Bitte warten ...";
+
+        try {
+            let response;
+            let result;
+
+            /* LOGIN */
+
+            if (authMode === "login") {
+                response = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "same-origin",
+                    body: JSON.stringify({
+                        username,
+                        password,
+                        code: authCode.value.trim()
+                    })
+                });
+
+                result = await response.json();
+
+                if (!response.ok) {
+                    if (result.requiresAuthenticator) {
+                        authCode.style.display = "block";
+                        authCode.focus();
+
+                        authError.textContent =
+                            "Bitte gib deinen aktuellen Authenticator-Code ein.";
+
+                        return;
+                    }
+
+                    throw new Error(
+                        result.error || "Anmeldung fehlgeschlagen."
+                    );
+                }
+
+                await enterDesktop(result.username);
+                return;
+            }
+
+            /* AUTHENTICATOR EINRICHTUNG BESTÄTIGEN */
+
+            if (
+                authMethod.value === "authenticator" &&
+                authSetupPending
+            ) {
+                response = await fetch(
+                    "/api/auth/register/verify",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        credentials: "same-origin",
+                        body: JSON.stringify({
+                            username,
+                            code: authCode.value.trim()
+                        })
+                    }
+                );
+
+                result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.error ||
+                        "Code konnte nicht bestätigt werden."
+                    );
+                }
+
+                authSetupPending = false;
+
+                await enterDesktop(result.username);
+                return;
+            }
+
+            /* REGISTRIERUNG STARTEN */
+
+            const method = authMethod.value;
+
+            response = await fetch("/api/auth/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -547,36 +749,70 @@ document.getElementById("authForm").addEventListener("submit", async event => {
                 credentials: "same-origin",
                 body: JSON.stringify({
                     username,
-                    password
+                    password,
+                    method,
+                    inviteCode: inviteCode.value
                 })
+            });
+
+            result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.error || "Registrierung fehlgeschlagen."
+                );
             }
-        );
 
-        const result = await response.json();
+            /* AUTHENTICATOR EINRICHTEN */
 
-        if (!response.ok) {
-            throw new Error(
-                result.error || "Anmeldung fehlgeschlagen."
-            );
+            if (result.setupRequired) {
+                authSetupPending = true;
+
+                authSecret.textContent = result.secret;
+
+                authSetup.style.display = "block";
+                authCode.style.display = "block";
+
+                authCode.value = "";
+                authCode.focus();
+
+                authSubmit.textContent =
+                    "Authenticator bestätigen";
+
+                authError.textContent =
+                    "Richte deinen Authenticator ein und gib den Code ein.";
+
+                return;
+            }
+
+            /* EINLADUNGSCODE-REGISTRIERUNG */
+
+            await enterDesktop(result.username);
+
+        } catch (error) {
+            authError.style.color = "#ff8585";
+            authError.textContent = error.message;
+
+        } finally {
+            authSubmit.disabled = false;
+
+            if (authMode === "login") {
+                authSubmit.textContent = "Anmelden";
+            } else if (authSetupPending) {
+                authSubmit.textContent =
+                    "Authenticator bestätigen";
+            } else {
+                authSubmit.textContent = "Konto erstellen";
+            }
         }
-
-        await enterDesktop(result.username);
-
-    } catch (error) {
-        errorElement.textContent = error.message;
-    } finally {
-        submitButton.disabled = false;
-        submitButton.textContent =
-            authMode === "login"
-                ? "Anmelden"
-                : "Konto erstellen";
     }
-});
+);
 
 async function enterDesktop(username) {
     document.body.classList.add("authenticated");
 
-    document.getElementById("accountUsername").textContent = username;
+    document.getElementById("accountUsername").textContent =
+        username;
 
     await loadCloudSettings();
 }
@@ -598,7 +834,7 @@ async function checkLogin() {
     } catch (error) {
         console.error("Login konnte nicht geprüft werden:", error);
 
-        document.getElementById("authError").textContent =
+        authError.textContent =
             "Verbindung zum NEXUS-Server fehlgeschlagen.";
     }
 }
@@ -619,8 +855,10 @@ async function logout() {
         document.body.classList.remove("authenticated");
 
         document.getElementById("startMenu").style.display = "none";
-        document.getElementById("authPassword").value = "";
-        document.getElementById("authError").textContent = "";
+
+        authPassword.value = "";
+        authCode.value = "";
+        inviteCode.value = "";
 
         setAuthMode("login");
     }
@@ -1180,6 +1418,8 @@ function updateClock() {
 /* ==================================
    SYSTEMSTART
 ================================== */
+
+setAuthMode("login");
 
 checkLogin();
 
