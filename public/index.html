@@ -441,19 +441,52 @@ body.authenticated #authScreen {
             <div id="authSetup" class="auth-extra">
 
                 <p class="auth-help">
-                    Kopiere diesen Schlüssel in deine Authenticator-Website.
-                    Wähle dort TOTP, SHA1, 6 Stellen und 30 Sekunden.
+                    Scanne diesen QR-Code mit deiner Authenticator-App
+                    oder öffne die Authenticator-Website.
                 </p>
 
-                <div class="secret-box">
-                    <code id="authSecret"></code>
-                </div>
+                <div id="authQr"
+                     style="
+                        display:flex;
+                        justify-content:center;
+                        padding:15px;
+                        background:white;
+                        border-radius:10px;
+                        margin:15px auto;
+                        width:max-content;
+                     ">
+             </div>
 
-                <button type="button" onclick="copyAuthSecret()">
-                    Schlüssel kopieren
-                </button>
+    <p class="auth-help">
+        Dein geheimer Schlüssel:
+    </p>
 
-            </div>
+    <div class="secret-box">
+        <code id="authSecret"></code>
+    </div>
+
+    <button type="button" onclick="copyAuthSecret()">
+        Schlüssel kopieren
+    </button>
+
+    <p class="auth-help">
+        Noch kein Authenticator?
+    </p>
+
+    <a
+        href="https://totp.app/"
+        target="_blank"
+        rel="noopener noreferrer"
+        style="color:#70bdff;"
+    >
+        Authenticator-Website öffnen ↗
+    </a>
+
+    <p class="auth-help">
+        Einstellungen: TOTP, SHA1, 6 Stellen, 30 Sekunden.
+    </p>
+
+</div>
 
             <input
                 id="authCode"
