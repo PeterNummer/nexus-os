@@ -627,10 +627,16 @@ body.authenticated #authScreen {
                    autocomplete="current-password"
                    required>
 
-            <select id="authMethod" class="auth-extra">
-                <option value="authenticator">Authenticator verwenden</option>
-                <option value="invite">Einladungscode verwenden</option>
-            </select>
+            <div id="authMethodContainer" style="display:none;text-align:left">
+                <label for="authMethod" style="display:block;margin-bottom:8px;color:#b9c8dd">
+                    Registrierungsmethode auswählen:
+                </label>
+            
+                <select id="authMethod">
+                    <option value="authenticator">🔐 Authenticator verwenden</option>
+                    <option value="invite">🎟️ Einladungscode verwenden</option>
+                </select>
+            </div>
 
             <input id="inviteCode"
                    class="auth-extra"
@@ -1020,7 +1026,7 @@ function setAuthMode(mode) {
     authPassword.autocomplete =
         mode === "login" ? "current-password" : "new-password";
 
-    authMethod.style.display =
+    document.getElementById("authMethodContainer").style.display =
         mode === "register" ? "block" : "none";
 
     inviteCode.style.display = "none";
