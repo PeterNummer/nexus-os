@@ -638,7 +638,8 @@ function makeDraggable(win, app) {
     });
 }
 
-function setBackground(number) {
+
+async function setBackground(number, save = true) {
 
     const backgrounds = {
         1: "linear-gradient(135deg,#173b70,#101b3c)",
@@ -646,10 +647,88 @@ function setBackground(number) {
         3: "linear-gradient(135deg,#42206b,#111b46)"
     };
 
+    if (!backgrounds[number]) return;
+
     document.body.style.background = backgrounds[number];
 
+    // Lokale Sicherung
     localStorage.setItem("nexusBackground", number);
+
+    // In Cloudflare speichern
+    if (save) {
+        try {
+            const response = await fetch("/api/data", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    key: "nexusBackground",
+                    value: number
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error("Cloud-Speicherung fehlgeschlagen");
+            }
+
+            console.log("NEXUS OS: Einstellung in der Cloud gespeichert.");
+
+        } catch (error) {
+            console.error("Cloud-Speicherfehler:", error);
+        }
+    }
 }
+
+
+
+async function loadCloudSettings() {
+
+    try {
+        const response = await fetch("/api/data");
+
+        if (!response.ok) {
+            throw new Error("Cloud-Daten konnten nicht geladen werden.");
+        }
+
+        const settings = await response.json();
+
+        const background = settings.find(
+            item => item.key === "nexusBackground"
+        );
+
+        if (background) {
+
+            const value = typeof background.value === "string"
+                ? JSON.parse(background.value)
+                : background.value;
+
+            setBackground(Number(value), false);
+
+            console.log("NEXUS OS: Cloud-Einstellungen geladen.");
+
+        } else {
+
+            const local = localStorage.getItem("nexusBackground");
+
+            if (local) {
+                await setBackground(Number(local), true);
+            }
+        }
+
+    } catch (error) {
+
+        console.error("NEXUS OS Cloud:", error);
+
+        const local = localStorage.getItem("nexusBackground");
+
+        if (local) {
+            setBackground(Number(local), false);
+        }
+    }
+}
+
+
 
 function navigateWeb() {
 
@@ -736,11 +815,7 @@ function updateClock() {
         now.toLocaleDateString("de-DE");
 }
 
-const savedBackground = localStorage.getItem("nexusBackground");
-
-if (savedBackground) {
-    setBackground(Number(savedBackground));
-}
+loadCloudSettings();
 
 updateClock();
 
