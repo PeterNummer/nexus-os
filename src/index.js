@@ -144,6 +144,7 @@ export default {
           await env.DB.prepare(`
             INSERT INTO user_settings (user_id, key, value)
             SELECT ?, key, value FROM settings
+            WHERE 1
             ON CONFLICT(user_id, key)
             DO NOTHING
           `).bind(userId).run();
