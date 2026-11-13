@@ -6,224 +6,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NEXUS OS</title>
 
+<!-- QR-Code-Bibliothek -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <style>
-* { box-sizing: border-box; }
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --accent: #1685df;
+    --panel: #17243b;
+    --panel-light: #263c5c;
+    --text: white;
+}
 
 body {
     margin: 0;
     height: 100vh;
     overflow: hidden;
     font-family: "Segoe UI", Arial, sans-serif;
-    color: white;
+    color: var(--text);
     background: linear-gradient(135deg,#173b70,#101b3c,#315d91);
     user-select: none;
 }
 
-.desktop {
-    height: 100vh;
-    padding: 20px;
+button, input, select {
+    font: inherit;
 }
 
-.desktop-icon {
-    width: 85px;
-    padding: 12px 5px;
-    text-align: center;
-    cursor: pointer;
-    border-radius: 8px;
-}
-
-.desktop-icon:hover { background: #ffffff25; }
-.desktop-icon .symbol { font-size: 35px; }
-.desktop-icon p { font-size: 13px; margin: 5px 0; }
-
-.taskbar {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    height: 58px;
-    background: #101a2de8;
-    backdrop-filter: blur(20px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    border-top: 1px solid #ffffff20;
-    z-index: 10000;
-}
-
-.task-button {
-    border: none;
-    background: transparent;
+button {
     color: white;
-    font-size: 23px;
-    width: 43px;
-    height: 43px;
-    border-radius: 9px;
-    cursor: pointer;
 }
 
-.task-button:hover,
-.task-button.active {
-    background: #ffffff25;
-}
-
-.task-button.active::after {
-    content: "";
-    display: block;
-    width: 15px;
-    height: 3px;
-    margin: 1px auto 0;
-    background: #56b4ff;
-    border-radius: 5px;
-}
-
-.open-apps {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-}
-
-.clock {
-    position: absolute;
-    right: 18px;
-    font-size: 12px;
-    text-align: right;
-}
-
-.start-menu {
-    position: fixed;
-    bottom: 70px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(520px,95vw);
-    padding: 25px;
-    background: #17243bf2;
-    backdrop-filter: blur(25px);
-    border: 1px solid #ffffff30;
-    border-radius: 14px;
-    display: none;
-    z-index: 9999;
-    box-shadow: 0 15px 50px #0007;
-}
-
-.start-menu h2 { font-weight: 500; }
-
-.app-grid {
-    display: grid;
-    grid-template-columns: repeat(3,1fr);
-    gap: 12px;
-}
-
-.app-item {
-    background: #ffffff12;
-    border: 0;
-    color: white;
-    border-radius: 9px;
-    padding: 18px 5px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.app-item:hover { background: #ffffff30; }
-
-.window {
-    position: absolute;
-    top: 100px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(650px,90vw);
-    height: min(420px,65vh);
-    min-width: 280px;
-    min-height: 180px;
-    background: #17243b;
-    border: 1px solid #ffffff35;
-    border-radius: 12px;
-    box-shadow: 0 20px 70px #0008;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    resize: both;
-}
-
-.window.maximized {
-    resize: none;
-    border-radius: 0;
-}
-
-.titlebar {
-    height: 42px;
-    min-height: 42px;
-    background: #253653;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-left: 14px;
-    cursor: grab;
-}
-
-.titlebar:active { cursor: grabbing; }
-
-.titlebar button {
-    width: 43px;
-    height: 42px;
-    background: transparent;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-
-.titlebar button:hover { background: #ffffff30; }
-.titlebar .close:hover { background: #d33; }
-
-.window-content {
-    padding: 20px;
-    overflow: auto;
-    flex: 1;
-}
-
-.window-content button,
-.window-content input {
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ffffff30;
-    background: #263c5c;
-    color: white;
-    margin: 5px;
-}
-
-.window-content button { cursor: pointer; }
-.window-content button:hover { background: #38567c; }
-
-.window-content input {
-    max-width: 90%;
-}
-
-.terminal {
-    background: #050b12;
-    height: 100%;
-    padding: 12px;
-    font-family: Consolas, monospace;
-    color: #6dff9a;
-    overflow: auto;
-}
-
-.terminal input {
-    width: 80%;
-    background: transparent;
-    border: none;
-    outline: none;
-    font-family: Consolas, monospace;
-}
-
-.file {
-    display: inline-block;
-    padding: 18px;
-    margin: 8px;
-    background: #ffffff12;
-    border-radius: 8px;
-}
-
-/* ANMELDEBEREICH */
+/* AUTHENTICATOR */
 
 .auth-screen {
     position: fixed;
@@ -233,15 +49,15 @@ body {
     justify-content: center;
     align-items: center;
     padding: 20px;
-    background:
-        radial-gradient(circle at top, #244c7d, transparent 55%),
-        linear-gradient(135deg, #07111f, #101b3c);
     overflow-y: auto;
+    background:
+        radial-gradient(circle at top,#244c7d,transparent 55%),
+        linear-gradient(135deg,#07111f,#101b3c);
 }
 
 .auth-panel {
-    width: min(420px, 100%);
-    padding: 35px;
+    width: min(430px,100%);
+    padding: 32px;
     text-align: center;
     background: #17243bf2;
     border: 1px solid #ffffff30;
@@ -280,7 +96,6 @@ body {
     border: 1px solid #ffffff30;
     border-radius: 8px;
     outline: none;
-    margin: 0;
 }
 
 .auth-panel input:focus,
@@ -295,15 +110,14 @@ body {
     border: 0;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 15px;
 }
 
 .auth-panel form button:hover {
     background: #258fe5;
 }
 
-.auth-panel form button:disabled {
-    opacity: 0.6;
+.auth-panel button:disabled {
+    opacity: .6;
     cursor: wait;
 }
 
@@ -315,12 +129,6 @@ body {
     cursor: pointer;
 }
 
-.auth-error {
-    min-height: 20px;
-    color: #ff8585 !important;
-    font-size: 13px;
-}
-
 .auth-extra {
     display: none;
 }
@@ -328,7 +136,12 @@ body {
 .auth-help {
     font-size: 12px;
     line-height: 1.5;
-    color: #b9c8dd;
+}
+
+.auth-error {
+    min-height: 20px;
+    color: #ff8585 !important;
+    font-size: 13px;
 }
 
 .secret-box {
@@ -343,10 +156,192 @@ body {
 
 .secret-box code {
     color: #70bdff;
+    font-size: 13px;
+}
+
+#authQr {
+    display: flex;
+    justify-content: center;
+    width: max-content;
+    max-width: 100%;
+    margin: 15px auto;
+    padding: 12px;
+    background: white;
+    border-radius: 10px;
+}
+
+#authQr img,
+#authQr canvas {
+    max-width: 100%;
+}
+
+/* DESKTOP */
+
+body:not(.authenticated) .desktop,
+body:not(.authenticated) .taskbar,
+body:not(.authenticated) .start-menu,
+body:not(.authenticated) .notification-center {
+    display: none !important;
+}
+
+body.authenticated #authScreen {
+    display: none;
+}
+
+.desktop {
+    height: 100vh;
+    padding: 20px;
+}
+
+.desktop-icon {
+    width: 90px;
+    padding: 12px 5px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 8px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.desktop-icon:hover {
+    background: #ffffff25;
+}
+
+.desktop-icon .symbol {
+    font-size: 35px;
+}
+
+.desktop-icon p {
+    font-size: 13px;
+    margin: 5px 0;
+}
+
+/* TASKBAR */
+
+.taskbar {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 58px;
+    background: #101a2de8;
+    backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-top: 1px solid #ffffff20;
+    z-index: 10000;
+}
+
+.task-button {
+    border: none;
+    background: transparent;
+    color: white;
+    font-size: 22px;
+    width: 43px;
+    height: 43px;
+    border-radius: 9px;
+    cursor: pointer;
+}
+
+.task-button:hover,
+.task-button.active {
+    background: #ffffff25;
+}
+
+.task-button.active::after {
+    content: "";
+    display: block;
+    width: 15px;
+    height: 3px;
+    margin: 1px auto 0;
+    background: #56b4ff;
+    border-radius: 5px;
+}
+
+.open-apps {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.taskbar-right {
+    position: absolute;
+    right: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.clock {
+    font-size: 12px;
+    text-align: right;
+    cursor: pointer;
+}
+
+.notification-button {
+    background: transparent;
+    border: 0;
+    font-size: 19px;
+    cursor: pointer;
+}
+
+/* STARTMENÜ */
+
+.start-menu {
+    position: fixed;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(540px,95vw);
+    max-height: 75vh;
+    overflow-y: auto;
+    padding: 24px;
+    background: #17243bf5;
+    backdrop-filter: blur(25px);
+    border: 1px solid #ffffff30;
+    border-radius: 14px;
+    display: none;
+    z-index: 9999;
+    box-shadow: 0 15px 50px #0007;
+}
+
+.start-menu h2 {
+    font-weight: 500;
+}
+
+.search-box {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0 18px;
+    color: white;
+    background: #071525;
+    border: 1px solid #ffffff30;
+    border-radius: 8px;
+    outline: none;
+}
+
+.app-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 12px;
+}
+
+.app-item {
+    background: #ffffff12;
+    border: 0;
+    color: white;
+    border-radius: 9px;
+    padding: 18px 5px;
+    cursor: pointer;
     font-size: 14px;
 }
 
-#accountInfo {
+.app-item:hover {
+    background: #ffffff30;
+}
+
+.account-info {
     margin-top: 20px;
     padding-top: 15px;
     border-top: 1px solid #ffffff25;
@@ -357,151 +352,335 @@ body {
 #logoutButton {
     margin-top: 10px;
     padding: 9px 14px;
-    color: white;
     background: #9b3434;
     border: 0;
     border-radius: 7px;
     cursor: pointer;
 }
 
-/* DESKTOP NUR NACH LOGIN */
+/* FENSTER */
 
-body:not(.authenticated) .desktop,
-body:not(.authenticated) .taskbar,
-body:not(.authenticated) .start-menu {
+.window {
+    position: absolute;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(680px,90vw);
+    height: min(470px,70vh);
+    min-width: 280px;
+    min-height: 190px;
+    background: var(--panel);
+    border: 1px solid #ffffff35;
+    border-radius: 12px;
+    box-shadow: 0 20px 70px #0008;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    resize: both;
+}
+
+.window.maximized {
+    resize: none;
+    border-radius: 0;
+}
+
+.titlebar {
+    height: 42px;
+    min-height: 42px;
+    background: #253653;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 14px;
+    cursor: grab;
+}
+
+.titlebar:active {
+    cursor: grabbing;
+}
+
+.titlebar button {
+    width: 43px;
+    height: 42px;
+    background: transparent;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.titlebar button:hover {
+    background: #ffffff30;
+}
+
+.titlebar .close:hover {
+    background: #d33;
+}
+
+.window-content {
+    padding: 18px;
+    overflow: auto;
+    flex: 1;
+}
+
+.window-content button,
+.window-content input,
+.window-content select {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ffffff30;
+    background: #263c5c;
+    color: white;
+    margin: 4px;
+}
+
+.window-content button {
+    cursor: pointer;
+}
+
+.window-content button:hover {
+    background: #38567c;
+}
+
+.window-content input {
+    max-width: 95%;
+}
+
+.app-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 12px;
+}
+
+.file-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    margin: 5px 0;
+    background: #ffffff10;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.file-row:hover {
+    background: #ffffff25;
+}
+
+.file-row .file-name {
+    flex: 1;
+}
+
+.file-row button {
+    margin: 0;
+}
+
+.breadcrumb {
+    color: #a9c9ed;
+    margin: 10px 0;
+    font-size: 13px;
+}
+
+.empty-state {
+    padding: 25px;
+    color: #a9b8cc;
+    text-align: center;
+}
+
+.terminal {
+    background: #050b12;
+    height: 100%;
+    padding: 12px;
+    font-family: Consolas,monospace;
+    color: #6dff9a;
+    overflow: auto;
+}
+
+.terminal input {
+    width: 75%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: Consolas,monospace;
+}
+
+/* NOTIFICATION CENTER */
+
+.notification-center {
+    position: fixed;
+    right: 12px;
+    bottom: 70px;
+    width: min(340px,90vw);
+    padding: 20px;
+    background: #17243bf5;
+    border: 1px solid #ffffff30;
+    border-radius: 14px;
+    box-shadow: 0 15px 50px #0008;
+    z-index: 10001;
     display: none;
 }
 
-body.authenticated #authScreen {
-    display: none;
+.notification-center h3 {
+    margin-top: 0;
 }
+
+.notification-item {
+    padding: 12px;
+    margin: 8px 0;
+    background: #ffffff12;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.notification-center button {
+    padding: 8px 12px;
+    background: #263c5c;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* SETTINGS */
+
+.setting-row {
+    padding: 12px 0;
+    border-bottom: 1px solid #ffffff20;
+}
+
+.setting-row label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.setting-row input[type="range"] {
+    width: 90%;
+    accent-color: #56b4ff;
+}
+
+.wallpaper-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.wallpaper-choice {
+    width: 90px;
+    height: 60px;
+    border: 2px solid #ffffff50;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.wallpaper-choice.selected {
+    border: 3px solid #56b4ff;
+}
+
+/* RESPONSIVE */
 
 @media(max-width:600px) {
-    .clock { display: none; }
-    .window { width: 94vw; }
-    .auth-panel { padding: 25px; }
+    .window {
+        width: 94vw;
+        height: 65vh;
+    }
+
+    .clock {
+        display: none;
+    }
+
+    .auth-panel {
+        padding: 24px;
+    }
+
+    .app-grid {
+        grid-template-columns: repeat(2,1fr);
+    }
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN UND REGISTRIERUNG -->
+<!-- ANMELDUNG -->
 
 <div id="authScreen" class="auth-screen">
     <div class="auth-panel">
 
         <div class="auth-logo">◈</div>
-
         <h1>NEXUS OS</h1>
-
-        <p id="authSubtitle">
-            Melde dich bei deinem NEXUS-Konto an.
-        </p>
+        <p id="authSubtitle">Melde dich bei deinem NEXUS-Konto an.</p>
 
         <form id="authForm">
 
-            <input
-                id="authUsername"
-                type="text"
-                placeholder="Benutzername"
-                minlength="3"
-                maxlength="20"
-                autocomplete="username"
-                required
-            >
+            <input id="authUsername"
+                   type="text"
+                   placeholder="Benutzername"
+                   minlength="3"
+                   maxlength="20"
+                   autocomplete="username"
+                   required>
 
-            <input
-                id="authPassword"
-                type="password"
-                placeholder="Passwort"
-                minlength="8"
-                maxlength="128"
-                autocomplete="current-password"
-                required
-            >
+            <input id="authPassword"
+                   type="password"
+                   placeholder="Passwort"
+                   minlength="8"
+                   maxlength="128"
+                   autocomplete="current-password"
+                   required>
 
             <select id="authMethod" class="auth-extra">
-                <option value="authenticator">
-                    Authenticator verwenden
-                </option>
-                <option value="invite">
-                    Einladungscode verwenden
-                </option>
+                <option value="authenticator">Authenticator verwenden</option>
+                <option value="invite">Einladungscode verwenden</option>
             </select>
 
-            <input
-                id="inviteCode"
-                class="auth-extra"
-                type="password"
-                placeholder="Einladungscode"
-                autocomplete="off"
-            >
+            <input id="inviteCode"
+                   class="auth-extra"
+                   type="password"
+                   placeholder="Einladungscode"
+                   autocomplete="off">
 
             <div id="authSetup" class="auth-extra">
 
                 <p class="auth-help">
-                    Scanne diesen QR-Code mit deiner Authenticator-App
+                    Scanne den QR-Code mit deiner Authenticator-App
                     oder öffne die Authenticator-Website.
                 </p>
 
-                <div id="authQr"
-                     style="
-                        display:flex;
-                        justify-content:center;
-                        padding:15px;
-                        background:white;
-                        border-radius:10px;
-                        margin:15px auto;
-                        width:max-content;
-                     ">
-             </div>
+                <div id="authQr"></div>
 
-    <p class="auth-help">
-        Dein geheimer Schlüssel:
-    </p>
+                <p class="auth-help">Geheimer Schlüssel:</p>
 
-    <div class="secret-box">
-        <code id="authSecret"></code>
-    </div>
+                <div class="secret-box">
+                    <code id="authSecret"></code>
+                </div>
 
-    <button type="button" onclick="copyAuthSecret()">
-        Schlüssel kopieren
-    </button>
+                <button type="button" onclick="copyAuthSecret()">
+                    Schlüssel kopieren
+                </button>
 
-    <p class="auth-help">
-        Noch kein Authenticator?
-    </p>
+                <p class="auth-help">
+                    <a href="https://totp.app/"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       style="color:#70bdff">
+                        Authenticator-Website öffnen ↗
+                    </a>
+                </p>
 
-    <a
-        href="https://totp.app/"
-        target="_blank"
-        rel="noopener noreferrer"
-        style="color:#70bdff;"
-    >
-        Authenticator-Website öffnen ↗
-    </a>
+                <p class="auth-help">
+                    Einstellungen: TOTP, SHA1, 6 Stellen, 30 Sekunden.
+                </p>
+            </div>
 
-    <p class="auth-help">
-        Einstellungen: TOTP, SHA1, 6 Stellen, 30 Sekunden.
-    </p>
+            <input id="authCode"
+                   class="auth-extra"
+                   type="text"
+                   inputmode="numeric"
+                   pattern="[0-9]{6}"
+                   maxlength="6"
+                   placeholder="Sechsstelliger Authenticator-Code"
+                   autocomplete="one-time-code">
 
-</div>
-
-            <input
-                id="authCode"
-                class="auth-extra"
-                type="text"
-                inputmode="numeric"
-                pattern="[0-9]{6}"
-                maxlength="6"
-                placeholder="Sechsstelliger Authenticator-Code"
-                autocomplete="one-time-code"
-            >
-
-            <button id="authSubmit" type="submit">
-                Anmelden
-            </button>
+            <button id="authSubmit" type="submit">Anmelden</button>
 
         </form>
 
@@ -520,7 +699,7 @@ body.authenticated #authScreen {
 
     <div class="desktop-icon" onclick="openApp('files')">
         <div class="symbol">📁</div>
-        <p>Dateien</p>
+        <p>Dateimanager</p>
     </div>
 
     <div class="desktop-icon" onclick="openApp('browser')">
@@ -538,67 +717,274 @@ body.authenticated #authScreen {
         <p>Terminal</p>
     </div>
 
+    <div class="desktop-icon" onclick="openApp('trash')">
+        <div class="symbol">🗑️</div>
+        <p>Papierkorb</p>
+    </div>
+
 </div>
 
 <!-- STARTMENÜ -->
 
 <div class="start-menu" id="startMenu">
 
-    <h2>NEXUS OS</h2>
-    <p>Angeheftete Apps</p>
+    <h2>◈ NEXUS OS</h2>
 
-    <div class="app-grid">
+    <input class="search-box"
+           id="appSearch"
+           placeholder="Apps suchen..."
+           oninput="filterApps()">
 
-        <button class="app-item" onclick="openApp('files')">
-            📁<br>Dateien
-        </button>
+    <div class="app-grid" id="appGrid"></div>
 
-        <button class="app-item" onclick="openApp('browser')">
-            🌐<br>Browser
-        </button>
-
-        <button class="app-item" onclick="openApp('settings')">
-            ⚙️<br>Einstellungen
-        </button>
-
-        <button class="app-item" onclick="openApp('terminal')">
-            ⌨️<br>Terminal
-        </button>
-
-        <button class="app-item" onclick="openApp('about')">
-            💻<br>Über NEXUS
-        </button>
-
-    </div>
-
-    <div id="accountInfo">
+    <div class="account-info">
         Angemeldet als:
         <strong id="accountUsername"></strong>
         <br>
-        <button id="logoutButton" onclick="logout()">
-            Abmelden
-        </button>
+        <button id="logoutButton" onclick="logout()">Abmelden</button>
     </div>
 
+</div>
+
+<!-- BENACHRICHTIGUNGEN -->
+
+<div class="notification-center" id="notificationCenter">
+    <h3>Benachrichtigungen</h3>
+    <div id="notificationList"></div>
+    <button onclick="clearNotifications()">Alle löschen</button>
 </div>
 
 <!-- TASKLEISTE -->
 
 <div class="taskbar">
 
-    <button class="task-button" onclick="toggleStart()">⊞</button>
+    <button class="task-button" onclick="toggleStart()" title="Startmenü">
+        ⊞
+    </button>
 
     <div class="open-apps" id="openApps"></div>
 
-    <div class="clock" id="clock"></div>
+    <div class="taskbar-right">
 
+        <button class="notification-button"
+                onclick="toggleNotifications()"
+                title="Benachrichtigungen">
+            🔔
+        </button>
+
+        <div class="clock" id="clock" onclick="toggleNotifications()"></div>
+
+    </div>
 </div>
 
 <script>
 
-/* ==================================
-   ANMELDUNG UND BENUTZERKONTEN
-================================== */
+/* =====================================
+   GRUNDEINSTELLUNGEN UND DATEN
+===================================== */
+
+const DEFAULT_SETTINGS = {
+    background: 1,
+    volume: 70
+};
+
+let settings = {...DEFAULT_SETTINGS};
+
+let files = [
+    {
+        id: "folder-documents",
+        name: "Dokumente",
+        type: "folder",
+        parent: "root",
+        content: ""
+    },
+    {
+        id: "folder-pictures",
+        name: "Bilder",
+        type: "folder",
+        parent: "root",
+        content: ""
+    },
+    {
+        id: "folder-downloads",
+        name: "Downloads",
+        type: "folder",
+        parent: "root",
+        content: ""
+    }
+];
+
+let trash = [];
+let currentFolder = "root";
+let currentUsername = "";
+let cloudReady = false;
+let saveQueue = Promise.resolve();
+
+let notifications = [];
+
+const wallpapers = {
+    1: "linear-gradient(135deg,#173b70,#101b3c,#315d91)",
+    2: "linear-gradient(135deg,#111827,#05070c)",
+    3: "linear-gradient(135deg,#42206b,#111b46)",
+    4: "linear-gradient(135deg,#075985,#0f172a)",
+    5: "linear-gradient(135deg,#14532d,#052e16)",
+    6: "linear-gradient(135deg,#7c2d12,#431407)"
+};
+
+const apps = {
+    files: {title:"Dateimanager",icon:"📁"},
+    browser: {title:"Browser",icon:"🌐"},
+    settings: {title:"Einstellungen",icon:"⚙️"},
+    terminal: {title:"Terminal",icon:"⌨️"},
+    trash: {title:"Papierkorb",icon:"🗑️"},
+    about: {title:"Über NEXUS",icon:"💻"}
+};
+
+let windows = {};
+let activeWindow = null;
+let nextWindow = 1;
+let zIndex = 100;
+
+
+/* =====================================
+   CLOUD-SPEICHER
+===================================== */
+
+async function cloudGetAll() {
+    const response = await fetch("/api/data", {
+        credentials: "same-origin"
+    });
+
+    if (!response.ok) {
+        throw new Error("Cloud-Daten konnten nicht geladen werden.");
+    }
+
+    return await response.json();
+}
+
+async function cloudSave(key, value) {
+
+    const response = await fetch("/api/data", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            key,
+            value: JSON.stringify(value)
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error("Cloud-Speicherung fehlgeschlagen.");
+    }
+
+    return await response.json();
+}
+
+function queueSave(key, value) {
+
+    if (!cloudReady) return;
+
+    // Speichert nacheinander, damit schnelle Änderungen
+    // nicht versehentlich ältere Daten zuletzt speichern.
+    saveQueue = saveQueue
+        .then(() => cloudSave(key, value))
+        .catch(error => {
+            console.error("NEXUS Cloud:", error);
+            notify("Cloud-Speicherung fehlgeschlagen", error.message);
+        });
+
+    return saveQueue;
+}
+
+async function saveSettings() {
+    return queueSave("nexusSettings", settings);
+}
+
+async function saveFiles() {
+    return queueSave("nexusFiles", files);
+}
+
+async function saveTrash() {
+    return queueSave("nexusTrash", trash);
+}
+
+async function loadCloudSettings() {
+
+    cloudReady = false;
+
+    try {
+        const data = await cloudGetAll();
+
+        function readValue(key) {
+            const entry = data.find(item => item.key === key);
+
+            if (!entry) return null;
+
+            try {
+                return JSON.parse(entry.value);
+            } catch {
+                return entry.value;
+            }
+        }
+
+        const loadedSettings = readValue("nexusSettings");
+
+        if (loadedSettings && typeof loadedSettings === "object") {
+            settings = {
+                ...DEFAULT_SETTINGS,
+                ...loadedSettings
+            };
+        } else {
+            // Alte NEXUS-Hintergrund-Einstellung übernehmen.
+            const oldBackground = readValue("nexusBackground");
+
+            if (oldBackground) {
+                settings.background = Number(oldBackground);
+            }
+        }
+
+        const loadedFiles = readValue("nexusFiles");
+
+        if (Array.isArray(loadedFiles)) {
+            files = loadedFiles;
+        }
+
+        const loadedTrash = readValue("nexusTrash");
+
+        if (Array.isArray(loadedTrash)) {
+            trash = loadedTrash;
+        }
+
+        applySettings();
+
+        cloudReady = true;
+
+        // Neue Standardwerte beim ersten Start speichern.
+        await saveSettings();
+        await saveFiles();
+        await saveTrash();
+
+        notify("Cloud geladen", "Deine NEXUS-Daten wurden geladen.");
+
+    } catch (error) {
+        console.error(error);
+
+        cloudReady = false;
+
+        notify(
+            "Cloud nicht erreichbar",
+            "Deine Änderungen können momentan nicht gespeichert werden."
+        );
+    }
+}
+
+
+/* =====================================
+   AUTHENTICATOR UND BENUTZERKONTEN
+===================================== */
 
 let authMode = "login";
 let authSetupPending = false;
@@ -614,6 +1000,7 @@ const authError = document.getElementById("authError");
 const authSubmit = document.getElementById("authSubmit");
 
 function setAuthMode(mode) {
+
     authMode = mode;
     authSetupPending = false;
 
@@ -640,6 +1027,8 @@ function setAuthMode(mode) {
     authSetup.style.display = "none";
     authCode.style.display = "none";
 
+    document.getElementById("authQr").innerHTML = "";
+
     inviteCode.value = "";
     authCode.value = "";
     authSecret.textContent = "";
@@ -649,11 +1038,13 @@ function setAuthMode(mode) {
 }
 
 authMethod.addEventListener("change", () => {
+
     authSetupPending = false;
+
     authSetup.style.display = "none";
     authCode.style.display = "none";
-    authCode.value = "";
-    authSecret.textContent = "";
+
+    document.getElementById("authQr").innerHTML = "";
 
     inviteCode.style.display =
         authMethod.value === "invite" ? "block" : "none";
@@ -667,20 +1058,57 @@ document.getElementById("authSwitch").addEventListener("click", () => {
 });
 
 async function copyAuthSecret() {
+
     try {
         await navigator.clipboard.writeText(authSecret.textContent);
+
         authError.style.color = "#70ffad";
         authError.textContent = "Schlüssel kopiert.";
+
     } catch {
-        authError.style.color = "#ff8585";
         authError.textContent =
-            "Kopieren nicht möglich. Bitte markiere den Schlüssel manuell.";
+            "Bitte markiere den Schlüssel und kopiere ihn manuell.";
     }
+}
+
+function createAuthenticatorQR(secret, username) {
+
+    const container = document.getElementById("authQr");
+
+    container.innerHTML = "";
+
+    if (typeof QRCode === "undefined") {
+        authError.textContent =
+            "QR-Code-Bibliothek konnte nicht geladen werden. Nutze den Schlüssel manuell.";
+        return;
+    }
+
+    const issuer = "NEXUS OS";
+
+    const account = encodeURIComponent(issuer + ":" + username);
+
+    const uri =
+        "otpauth://totp/" + account +
+        "?secret=" + encodeURIComponent(secret) +
+        "&issuer=" + encodeURIComponent(issuer) +
+        "&algorithm=SHA1" +
+        "&digits=6" +
+        "&period=30";
+
+    new QRCode(container, {
+        text: uri,
+        width: 190,
+        height: 190,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+    });
 }
 
 document.getElementById("authForm").addEventListener(
     "submit",
     async event => {
+
         event.preventDefault();
 
         const username = authUsername.value.trim();
@@ -693,17 +1121,15 @@ document.getElementById("authForm").addEventListener(
         authSubmit.textContent = "Bitte warten ...";
 
         try {
+
             let response;
             let result;
 
-            /* LOGIN */
-
             if (authMode === "login") {
+
                 response = await fetch("/api/auth/login", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                    headers: {"Content-Type":"application/json"},
                     credentials: "same-origin",
                     body: JSON.stringify({
                         username,
@@ -715,6 +1141,7 @@ document.getElementById("authForm").addEventListener(
                 result = await response.json();
 
                 if (!response.ok) {
+
                     if (result.requiresAuthenticator) {
                         authCode.style.display = "block";
                         authCode.focus();
@@ -734,33 +1161,26 @@ document.getElementById("authForm").addEventListener(
                 return;
             }
 
-            /* AUTHENTICATOR EINRICHTUNG BESTÄTIGEN */
-
             if (
                 authMethod.value === "authenticator" &&
                 authSetupPending
             ) {
-                response = await fetch(
-                    "/api/auth/register/verify",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        credentials: "same-origin",
-                        body: JSON.stringify({
-                            username,
-                            code: authCode.value.trim()
-                        })
-                    }
-                );
+
+                response = await fetch("/api/auth/register/verify", {
+                    method: "POST",
+                    headers: {"Content-Type":"application/json"},
+                    credentials: "same-origin",
+                    body: JSON.stringify({
+                        username,
+                        code: authCode.value.trim()
+                    })
+                });
 
                 result = await response.json();
 
                 if (!response.ok) {
                     throw new Error(
-                        result.error ||
-                        "Code konnte nicht bestätigt werden."
+                        result.error || "Code konnte nicht bestätigt werden."
                     );
                 }
 
@@ -770,15 +1190,11 @@ document.getElementById("authForm").addEventListener(
                 return;
             }
 
-            /* REGISTRIERUNG STARTEN */
-
             const method = authMethod.value;
 
             response = await fetch("/api/auth/register", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: {"Content-Type":"application/json"},
                 credentials: "same-origin",
                 body: JSON.stringify({
                     username,
@@ -796,9 +1212,8 @@ document.getElementById("authForm").addEventListener(
                 );
             }
 
-            /* AUTHENTICATOR EINRICHTEN */
-
             if (result.setupRequired) {
+
                 authSetupPending = true;
 
                 authSecret.textContent = result.secret;
@@ -806,34 +1221,34 @@ document.getElementById("authForm").addEventListener(
                 authSetup.style.display = "block";
                 authCode.style.display = "block";
 
+                createAuthenticatorQR(result.secret, username);
+
                 authCode.value = "";
                 authCode.focus();
 
-                authSubmit.textContent =
-                    "Authenticator bestätigen";
+                authSubmit.textContent = "Authenticator bestätigen";
 
                 authError.textContent =
-                    "Richte deinen Authenticator ein und gib den Code ein.";
+                    "Scanne den QR-Code und gib anschließend den Code ein.";
 
                 return;
             }
 
-            /* EINLADUNGSCODE-REGISTRIERUNG */
-
             await enterDesktop(result.username);
 
         } catch (error) {
+
             authError.style.color = "#ff8585";
             authError.textContent = error.message;
 
         } finally {
+
             authSubmit.disabled = false;
 
             if (authMode === "login") {
                 authSubmit.textContent = "Anmelden";
             } else if (authSetupPending) {
-                authSubmit.textContent =
-                    "Authenticator bestätigen";
+                authSubmit.textContent = "Authenticator bestätigen";
             } else {
                 authSubmit.textContent = "Konto erstellen";
             }
@@ -841,17 +1256,26 @@ document.getElementById("authForm").addEventListener(
     }
 );
 
+
+/* =====================================
+   LOGIN UND LOGOUT
+===================================== */
+
 async function enterDesktop(username) {
+
+    currentUsername = username;
+
     document.body.classList.add("authenticated");
 
-    document.getElementById("accountUsername").textContent =
-        username;
+    document.getElementById("accountUsername").textContent = username;
 
     await loadCloudSettings();
 }
 
 async function checkLogin() {
+
     try {
+
         const response = await fetch("/api/auth/me", {
             credentials: "same-origin"
         });
@@ -865,7 +1289,8 @@ async function checkLogin() {
         }
 
     } catch (error) {
-        console.error("Login konnte nicht geprüft werden:", error);
+
+        console.error(error);
 
         authError.textContent =
             "Verbindung zum NEXUS-Server fehlgeschlagen.";
@@ -873,17 +1298,22 @@ async function checkLogin() {
 }
 
 async function logout() {
+
     try {
+
         await fetch("/api/auth/logout", {
             method: "POST",
             credentials: "same-origin"
         });
 
     } catch (error) {
-        console.error("Logout fehlgeschlagen:", error);
+        console.error(error);
 
     } finally {
+
         Object.keys(windows).forEach(closeWindow);
+
+        cloudReady = false;
 
         document.body.classList.remove("authenticated");
 
@@ -898,60 +1328,590 @@ async function logout() {
 }
 
 
-/* ==================================
-   APPS
-================================== */
+/* =====================================
+   EINSTELLUNGEN
+===================================== */
 
-const apps = {
-    files: {
-        title: "Dateimanager",
-        icon: "📁"
-    },
+function applySettings() {
 
-    browser: {
-        title: "NEXUS Browser",
-        icon: "🌐"
-    },
+    document.body.style.background =
+        wallpapers[settings.background] || wallpapers[1];
 
-    settings: {
-        title: "Einstellungen",
-        icon: "⚙️"
-    },
+    document.documentElement.style.setProperty(
+        "--accent",
+        "#1685df"
+    );
 
-    terminal: {
-        title: "NEXUS Terminal",
-        icon: "⌨️"
-    },
+    const volume = document.getElementById("volumeSlider");
 
-    about: {
-        title: "Über NEXUS OS",
-        icon: "💻"
+    if (volume) {
+        volume.value = settings.volume;
     }
-};
 
-let windows = {};
-let activeWindow = null;
-let nextWindow = 1;
-let zIndex = 100;
-
-function toggleStart() {
-    const menu = document.getElementById("startMenu");
-
-    menu.style.display =
-        menu.style.display === "block" ? "none" : "block";
+    updateWallpaperSelection();
 }
+
+function setBackground(number) {
+
+    number = Number(number);
+
+    if (!wallpapers[number]) return;
+
+    settings.background = number;
+
+    applySettings();
+    saveSettings();
+
+    notify("Hintergrund geändert", "Dein Hintergrund wurde gespeichert.");
+}
+
+function setVolume(value) {
+
+    settings.volume = Math.max(0, Math.min(100, Number(value)));
+
+    const label = document.getElementById("volumeValue");
+
+    if (label) {
+        label.textContent = settings.volume + "%";
+    }
+
+    saveSettings();
+}
+
+function updateWallpaperSelection() {
+
+    document.querySelectorAll(".wallpaper-choice").forEach(button => {
+
+        button.classList.toggle(
+            "selected",
+            Number(button.dataset.wallpaper) === Number(settings.background)
+        );
+    });
+}
+
+function settingsContent() {
+
+    return `
+        <h2>⚙️ Einstellungen</h2>
+
+        <h3>Personalisierung</h3>
+
+        <div class="setting-row">
+            <label>Hintergrund auswählen</label>
+
+            <div class="wallpaper-options">
+                <button class="wallpaper-choice"
+                        data-wallpaper="1"
+                        style="background:${wallpapers[1]}"
+                        onclick="setBackground(1)"
+                        title="Blau"></button>
+
+                <button class="wallpaper-choice"
+                        data-wallpaper="2"
+                        style="background:${wallpapers[2]}"
+                        onclick="setBackground(2)"
+                        title="Dunkel"></button>
+
+                <button class="wallpaper-choice"
+                        data-wallpaper="3"
+                        style="background:${wallpapers[3]}"
+                        onclick="setBackground(3)"
+                        title="Lila"></button>
+
+                <button class="wallpaper-choice"
+                        data-wallpaper="4"
+                        style="background:${wallpapers[4]}"
+                        onclick="setBackground(4)"
+                        title="Ozean"></button>
+
+                <button class="wallpaper-choice"
+                        data-wallpaper="5"
+                        style="background:${wallpapers[5]}"
+                        onclick="setBackground(5)"
+                        title="Wald"></button>
+
+                <button class="wallpaper-choice"
+                        data-wallpaper="6"
+                        style="background:${wallpapers[6]}"
+                        onclick="setBackground(6)"
+                        title="Feuer"></button>
+            </div>
+        </div>
+
+        <div class="setting-row">
+            <label>Lautstärke: <span id="volumeValue">${settings.volume}%</span></label>
+
+            <input id="volumeSlider"
+                   type="range"
+                   min="0"
+                   max="100"
+                   value="${settings.volume}"
+                   oninput="setVolume(this.value)">
+        </div>
+
+        <h3>Benutzerkonto</h3>
+
+        <div class="setting-row">
+            Benutzername: <strong>${escapeHTML(currentUsername)}</strong>
+        </div>
+
+        <div class="setting-row">
+            <button onclick="logout()">Abmelden</button>
+        </div>
+
+        <p style="color:#a9b8cc;font-size:12px">
+            Deine Einstellungen werden automatisch in deinem NEXUS-Konto gespeichert.
+            Der Lautstärkeregler ist eine NEXUS-Einstellung und verändert nicht
+            die Windows-Systemlautstärke.
+        </p>
+    `;
+}
+
+
+/* =====================================
+   DATEIMANAGER
+===================================== */
+
+function escapeHTML(value) {
+
+    return String(value).replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+    })[character]);
+}
+
+function createId() {
+
+    if (crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+
+    return Date.now().toString(36) +
+        Math.random().toString(36).slice(2);
+}
+
+function getFolderName(id) {
+
+    if (id === "root") return "Dieser PC";
+
+    const folder = files.find(item =>
+        item.id === id && item.type === "folder"
+    );
+
+    return folder ? folder.name : "Dieser PC";
+}
+
+function renderFiles() {
+
+    const container = document.getElementById("fileList");
+
+    if (!container) return;
+
+    const items = files.filter(item =>
+        item.parent === currentFolder
+    );
+
+    document.getElementById("fileBreadcrumb").textContent =
+        "📁 " + getFolderName(currentFolder);
+
+    container.innerHTML = "";
+
+    if (currentFolder !== "root") {
+
+        const back = document.createElement("div");
+
+        back.className = "file-row";
+        back.innerHTML = "<span>⬆️</span><span class='file-name'>Zurück</span>";
+
+        back.onclick = () => {
+
+            const current = files.find(item => item.id === currentFolder);
+
+            currentFolder = current ? current.parent : "root";
+
+            renderFiles();
+        };
+
+        container.appendChild(back);
+    }
+
+    if (items.length === 0) {
+
+        const empty = document.createElement("div");
+
+        empty.className = "empty-state";
+        empty.textContent = "Dieser Ordner ist leer.";
+
+        container.appendChild(empty);
+    }
+
+    items.forEach(item => {
+
+        const row = document.createElement("div");
+
+        row.className = "file-row";
+
+        const icon = item.type === "folder" ? "📁" : "📄";
+
+        row.innerHTML = `
+            <span>${icon}</span>
+            <span class="file-name">${escapeHTML(item.name)}</span>
+            <button data-action="rename">Umbenennen</button>
+            <button data-action="delete">Löschen</button>
+        `;
+
+        row.querySelector(".file-name").ondblclick = () => {
+
+            if (item.type === "folder") {
+                currentFolder = item.id;
+                renderFiles();
+            } else {
+                editFile(item.id);
+            }
+        };
+
+        row.querySelector('[data-action="rename"]').onclick = event => {
+            event.stopPropagation();
+            renameFile(item.id);
+        };
+
+        row.querySelector('[data-action="delete"]').onclick = event => {
+            event.stopPropagation();
+            deleteFile(item.id);
+        };
+
+        row.onclick = () => {
+            if (item.type === "folder") {
+                currentFolder = item.id;
+                renderFiles();
+            } else {
+                editFile(item.id);
+            }
+        };
+
+        container.appendChild(row);
+    });
+}
+
+function filesContent() {
+
+    setTimeout(renderFiles, 0);
+
+    return `
+        <h2>📁 Dateimanager</h2>
+
+        <div class="app-toolbar">
+            <button onclick="createFolder()">＋ Ordner</button>
+            <button onclick="createFile()">＋ Datei</button>
+            <button onclick="openApp('trash')">🗑️ Papierkorb</button>
+        </div>
+
+        <div class="breadcrumb" id="fileBreadcrumb">Dieser PC</div>
+
+        <div id="fileList"></div>
+
+        <p style="font-size:11px;color:#9eb1c9">
+            NEXUS Cloud-Dateimanager · Änderungen werden automatisch gespeichert.
+        </p>
+    `;
+}
+
+function createFolder() {
+
+    const name = prompt("Name des neuen Ordners:");
+
+    if (!name || !name.trim()) return;
+
+    files.push({
+        id: createId(),
+        name: name.trim(),
+        type: "folder",
+        parent: currentFolder,
+        content: ""
+    });
+
+    saveFiles();
+    renderFiles();
+}
+
+function createFile() {
+
+    const name = prompt("Name der neuen Datei:", "Neue Datei.txt");
+
+    if (!name || !name.trim()) return;
+
+    files.push({
+        id: createId(),
+        name: name.trim(),
+        type: "file",
+        parent: currentFolder,
+        content: ""
+    });
+
+    saveFiles();
+    renderFiles();
+}
+
+function editFile(id) {
+
+    const file = files.find(item => item.id === id);
+
+    if (!file || file.type !== "file") return;
+
+    const content = prompt(
+        "Inhalt von " + file.name + ":",
+        file.content || ""
+    );
+
+    if (content === null) return;
+
+    file.content = content;
+
+    saveFiles();
+
+    notify("Datei gespeichert", file.name + " wurde in der Cloud gespeichert.");
+
+    renderFiles();
+}
+
+function renameFile(id) {
+
+    const file = files.find(item => item.id === id);
+
+    if (!file) return;
+
+    const name = prompt("Neuer Name:", file.name);
+
+    if (!name || !name.trim()) return;
+
+    file.name = name.trim();
+
+    saveFiles();
+    renderFiles();
+}
+
+function deleteFile(id) {
+
+    const file = files.find(item => item.id === id);
+
+    if (!file) return;
+
+    if (!confirm('"' + file.name + '" in den Papierkorb verschieben?')) {
+        return;
+    }
+
+    const ids = [id];
+
+    // Unterordner ebenfalls in den Papierkorb verschieben.
+    function collectChildren(parentId) {
+        files.filter(item => item.parent === parentId).forEach(child => {
+            ids.push(child.id);
+
+            if (child.type === "folder") {
+                collectChildren(child.id);
+            }
+        });
+    }
+
+    if (file.type === "folder") {
+        collectChildren(id);
+    }
+
+    const moved = files.filter(item => ids.includes(item.id));
+
+    moved.forEach(item => {
+        item.originalParent = item.parent;
+        item.parent = "trash";
+    });
+
+    trash.push(...moved);
+
+    files = files.filter(item => !ids.includes(item.id));
+
+    if (currentFolder === id) {
+        currentFolder = "root";
+    }
+
+    saveFiles();
+    saveTrash();
+    renderFiles();
+
+    notify("Papierkorb", file.name + " wurde verschoben.");
+}
+
+
+/* =====================================
+   PAPIERKORB
+===================================== */
+
+function renderTrash() {
+
+    const container = document.getElementById("trashList");
+
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    if (trash.length === 0) {
+
+        container.innerHTML =
+            '<div class="empty-state">Der Papierkorb ist leer.</div>';
+
+        return;
+    }
+
+    trash.forEach(item => {
+
+        const row = document.createElement("div");
+
+        row.className = "file-row";
+
+        row.innerHTML = `
+            <span>${item.type === "folder" ? "📁" : "📄"}</span>
+            <span class="file-name">${escapeHTML(item.name)}</span>
+            <button data-action="restore">Wiederherstellen</button>
+            <button data-action="remove">Endgültig löschen</button>
+        `;
+
+        row.querySelector('[data-action="restore"]').onclick = () => {
+            restoreTrashItem(item.id);
+        };
+
+        row.querySelector('[data-action="remove"]').onclick = () => {
+            permanentlyDelete(item.id);
+        };
+
+        container.appendChild(row);
+    });
+}
+
+function trashContent() {
+
+    setTimeout(renderTrash, 0);
+
+    return `
+        <h2>🗑️ Papierkorb</h2>
+
+        <div class="app-toolbar">
+            <button onclick="emptyTrash()">Papierkorb leeren</button>
+        </div>
+
+        <div id="trashList"></div>
+    `;
+}
+
+function restoreTrashItem(id) {
+
+    const item = trash.find(entry => entry.id === id);
+
+    if (!item) return;
+
+    const restoreIds = [id];
+
+    function collectChildren(parentId) {
+        trash.filter(entry => entry.parent === parentId).forEach(child => {
+            restoreIds.push(child.id);
+
+            if (child.type === "folder") {
+                collectChildren(child.id);
+            }
+        });
+    }
+
+    if (item.type === "folder") {
+        collectChildren(id);
+    }
+
+    const restored = trash.filter(entry => restoreIds.includes(entry.id));
+
+    restored.forEach(entry => {
+
+        const originalParent = entry.originalParent || "root";
+
+        const parentStillExists =
+            originalParent === "root" ||
+            files.some(file =>
+                file.id === originalParent && file.type === "folder"
+            );
+
+        entry.parent = parentStillExists ? originalParent : "root";
+
+        delete entry.originalParent;
+
+        files.push(entry);
+    });
+
+    trash = trash.filter(entry => !restoreIds.includes(entry.id));
+
+    saveFiles();
+    saveTrash();
+
+    renderTrash();
+
+    notify("Wiederhergestellt", item.name + " wurde wiederhergestellt.");
+}
+
+function permanentlyDelete(id) {
+
+    const item = trash.find(entry => entry.id === id);
+
+    if (!item) return;
+
+    if (!confirm('"' + item.name + '" endgültig löschen?')) return;
+
+    const ids = [id];
+
+    function collectChildren(parentId) {
+        trash.filter(entry => entry.parent === parentId).forEach(child => {
+            ids.push(child.id);
+
+            if (child.type === "folder") {
+                collectChildren(child.id);
+            }
+        });
+    }
+
+    if (item.type === "folder") {
+        collectChildren(id);
+    }
+
+    trash = trash.filter(entry => !ids.includes(entry.id));
+
+    saveTrash();
+    renderTrash();
+
+    notify("Gelöscht", item.name + " wurde endgültig gelöscht.");
+}
+
+function emptyTrash() {
+
+    if (trash.length === 0) return;
+
+    if (!confirm("Möchtest du den gesamten Papierkorb leeren?")) return;
+
+    trash = [];
+
+    saveTrash();
+    renderTrash();
+
+    notify("Papierkorb geleert", "Alle Einträge wurden entfernt.");
+}
+
+
+/* =====================================
+   APPS UND FENSTER
+===================================== */
 
 function getAppContent(app) {
 
-    if (app === "files") {
-        return `
-            <h2>📁 Dieser PC</h2>
-            <div class="file">📂 Dokumente</div>
-            <div class="file">📂 Bilder</div>
-            <div class="file">📂 Downloads</div>
-            <p>Dein NEXUS Dateimanager.</p>
-        `;
-    }
+    if (app === "files") return filesContent();
+
+    if (app === "trash") return trashContent();
+
+    if (app === "settings") return settingsContent();
 
     if (app === "browser") {
         return `
@@ -963,36 +1923,19 @@ function getAppContent(app) {
         `;
     }
 
-    if (app === "settings") {
-        return `
-            <h2>⚙️ Einstellungen</h2>
-
-            <h3>Personalisierung</h3>
-
-            <button onclick="setBackground(1)">Blau</button>
-            <button onclick="setBackground(2)">Dunkel</button>
-            <button onclick="setBackground(3)">Lila</button>
-
-            <h3>System</h3>
-            <p>NEXUS OS Version 0.2</p>
-        `;
-    }
-
     if (app === "terminal") {
         return `
             <div class="terminal">
                 <div id="terminalOutput">
-                    NEXUS TERMINAL [Version 0.2]<br>
+                    NEXUS TERMINAL [Version 0.3]<br>
                     Schreibe help für Befehle.<br><br>
                 </div>
 
                 <span>NEXUS&gt; </span>
 
-                <input
-                    id="terminalInput"
-                    placeholder="Befehl..."
-                    onkeydown="if(event.key==='Enter') runCommand()"
-                >
+                <input id="terminalInput"
+                       placeholder="Befehl..."
+                       onkeydown="if(event.key==='Enter') runCommand()">
             </div>
         `;
     }
@@ -1000,19 +1943,20 @@ function getAppContent(app) {
     if (app === "about") {
         return `
             <h2>💻 NEXUS OS</h2>
-            <p>Version 0.2</p>
-            <p>Ein eigenes Web-Betriebssystem.</p>
-            <p>Entwickelt mit HTML, CSS und JavaScript.</p>
+            <p>Version 0.3</p>
+            <p>Ein eigenes browserbasiertes Betriebssystem.</p>
+
+            <h3>Systeminformationen</h3>
+            <p>Benutzer: ${escapeHTML(currentUsername)}</p>
+            <p>Browser: ${escapeHTML(navigator.userAgent)}</p>
+            <p>Sprache: ${escapeHTML(navigator.language)}</p>
+            <p>Bildschirm: ${screen.width} × ${screen.height}</p>
+            <p>Cloud: ${cloudReady ? "Verbunden" : "Nicht verbunden"}</p>
         `;
     }
 
     return "";
 }
-
-
-/* ==================================
-   FENSTERVERWALTUNG
-================================== */
 
 function openApp(app) {
 
@@ -1036,9 +1980,9 @@ function openApp(app) {
             <span>${apps[app].icon} ${apps[app].title}</span>
 
             <div>
-                <button onclick="minimizeWindow('${app}')">—</button>
-                <button onclick="maximizeWindow('${app}')">□</button>
-                <button class="close" onclick="closeWindow('${app}')">×</button>
+                <button data-action="minimize">—</button>
+                <button data-action="maximize">□</button>
+                <button class="close" data-action="close">×</button>
             </div>
 
         </div>
@@ -1052,15 +1996,24 @@ function openApp(app) {
 
     windows[app] = {
         element: win,
-        id: id,
         minimized: false,
         maximized: false,
         previous: null
     };
 
+    win.querySelector('[data-action="minimize"]').onclick =
+        () => minimizeWindow(app);
+
+    win.querySelector('[data-action="maximize"]').onclick =
+        () => maximizeWindow(app);
+
+    win.querySelector('[data-action="close"]').onclick =
+        () => closeWindow(app);
+
     win.addEventListener("pointerdown", () => focusWindow(app));
 
     makeDraggable(win, app);
+
     createTaskButton(app);
 
     focusWindow(app);
@@ -1128,9 +2081,7 @@ function minimizeWindow(app) {
     data.element.style.display = "none";
     data.minimized = true;
 
-    if (activeWindow === app) {
-        activeWindow = null;
-    }
+    if (activeWindow === app) activeWindow = null;
 
     updateTaskbar();
 }
@@ -1187,7 +2138,8 @@ function maximizeWindow(app) {
             top: win.style.top,
             left: win.style.left,
             width: win.style.width,
-            height: win.style.height
+            height: win.style.height,
+            transform: win.style.transform
         };
 
         win.classList.add("maximized");
@@ -1208,7 +2160,7 @@ function maximizeWindow(app) {
         win.style.left = data.previous.left;
         win.style.width = data.previous.width;
         win.style.height = data.previous.height;
-        win.style.transform = "none";
+        win.style.transform = data.previous.transform;
 
         data.maximized = false;
     }
@@ -1224,9 +2176,9 @@ function makeDraggable(win, app) {
     let offsetX = 0;
     let offsetY = 0;
 
-    bar.addEventListener("pointerdown", e => {
+    bar.addEventListener("pointerdown", event => {
 
-        if (e.target.tagName === "BUTTON") return;
+        if (event.target.tagName === "BUTTON") return;
 
         const data = windows[app];
 
@@ -1238,20 +2190,20 @@ function makeDraggable(win, app) {
 
         const rect = win.getBoundingClientRect();
 
-        offsetX = e.clientX - rect.left;
-        offsetY = e.clientY - rect.top;
+        offsetX = event.clientX - rect.left;
+        offsetY = event.clientY - rect.top;
 
         win.style.transform = "none";
 
-        bar.setPointerCapture(e.pointerId);
+        bar.setPointerCapture(event.pointerId);
     });
 
-    bar.addEventListener("pointermove", e => {
+    bar.addEventListener("pointermove", event => {
 
         if (!dragging) return;
 
-        win.style.left = (e.clientX - offsetX) + "px";
-        win.style.top = Math.max(0, e.clientY - offsetY) + "px";
+        win.style.left = (event.clientX - offsetX) + "px";
+        win.style.top = Math.max(0, event.clientY - offsetY) + "px";
     });
 
     bar.addEventListener("pointerup", () => {
@@ -1262,94 +2214,153 @@ function makeDraggable(win, app) {
         dragging = false;
     });
 
-    bar.addEventListener("dblclick", e => {
+    bar.addEventListener("dblclick", event => {
 
-        if (e.target.tagName === "BUTTON") return;
+        if (event.target.tagName === "BUTTON") return;
 
         maximizeWindow(app);
     });
 }
 
 
-/* ==================================
-   CLOUD-EINSTELLUNGEN
-================================== */
+/* =====================================
+   STARTMENÜ UND APP-SUCHE
+===================================== */
 
-async function setBackground(number, save = true) {
+function renderAppGrid(filter = "") {
 
-    const backgrounds = {
-        1: "linear-gradient(135deg,#173b70,#101b3c)",
-        2: "linear-gradient(135deg,#111827,#05070c)",
-        3: "linear-gradient(135deg,#42206b,#111b46)"
-    };
+    const grid = document.getElementById("appGrid");
 
-    if (!backgrounds[number]) return;
+    grid.innerHTML = "";
 
-    document.body.style.background = backgrounds[number];
+    Object.entries(apps).forEach(([id, app]) => {
 
-    if (save) {
-        try {
-            const response = await fetch("/api/data", {
-                method: "POST",
-                credentials: "same-origin",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    key: "nexusBackground",
-                    value: number
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error("HTTP " + response.status);
-            }
-
-            console.log("NEXUS OS: Hintergrund gespeichert.");
-
-        } catch (error) {
-            console.error("Speichern fehlgeschlagen:", error);
+        if (
+            !app.title.toLowerCase().includes(filter.toLowerCase())
+        ) {
+            return;
         }
+
+        const button = document.createElement("button");
+
+        button.className = "app-item";
+
+        button.innerHTML =
+            app.icon + "<br>" + escapeHTML(app.title);
+
+        button.onclick = () => openApp(id);
+
+        grid.appendChild(button);
+    });
+
+    if (!grid.children.length) {
+        grid.innerHTML =
+            '<p class="empty-state">Keine App gefunden.</p>';
     }
 }
 
-async function loadCloudSettings() {
+function filterApps() {
 
-    try {
-        const response = await fetch("/api/data", {
-            credentials: "same-origin"
-        });
+    const value = document.getElementById("appSearch").value;
 
-        if (!response.ok) {
-            throw new Error("HTTP " + response.status);
-        }
+    renderAppGrid(value);
+}
 
-        const data = await response.json();
+function toggleStart() {
 
-        const background = data.find(
-            item => item.key === "nexusBackground"
-        );
+    const menu = document.getElementById("startMenu");
 
-        if (background) {
-            setBackground(Number(background.value), false);
-        } else {
-            setBackground(1, false);
-        }
+    menu.style.display =
+        menu.style.display === "block" ? "none" : "block";
 
-    } catch (error) {
-        console.error(
-            "Cloud-Einstellungen konnten nicht geladen werden:",
-            error
-        );
+    if (menu.style.display === "block") {
 
-        setBackground(1, false);
+        document.getElementById("appSearch").value = "";
+
+        renderAppGrid();
+
+        document.getElementById("appSearch").focus();
     }
+
+    document.getElementById("notificationCenter").style.display = "none";
 }
 
 
-/* ==================================
+/* =====================================
+   BENACHRICHTIGUNGEN
+===================================== */
+
+function notify(title, message) {
+
+    notifications.unshift({
+        title,
+        message,
+        time: new Date().toLocaleTimeString("de-DE", {
+            hour: "2-digit",
+            minute: "2-digit"
+        })
+    });
+
+    notifications = notifications.slice(0, 20);
+
+    renderNotifications();
+}
+
+function renderNotifications() {
+
+    const list = document.getElementById("notificationList");
+
+    if (!list) return;
+
+    list.innerHTML = "";
+
+    if (notifications.length === 0) {
+
+        list.innerHTML =
+            '<div class="empty-state">Keine Benachrichtigungen.</div>';
+
+        return;
+    }
+
+    notifications.forEach(item => {
+
+        const element = document.createElement("div");
+
+        element.className = "notification-item";
+
+        element.innerHTML = `
+            <strong>${escapeHTML(item.title)}</strong>
+            <div>${escapeHTML(item.message)}</div>
+            <small>${escapeHTML(item.time)}</small>
+        `;
+
+        list.appendChild(element);
+    });
+}
+
+function toggleNotifications() {
+
+    const center = document.getElementById("notificationCenter");
+
+    center.style.display =
+        center.style.display === "block" ? "none" : "block";
+
+    document.getElementById("startMenu").style.display = "none";
+
+    renderNotifications();
+}
+
+function clearNotifications() {
+
+    notifications = [];
+
+    renderNotifications();
+}
+
+
+/* =====================================
    BROWSER
-================================== */
+===================================== */
 
 function navigateWeb() {
 
@@ -1366,6 +2377,7 @@ function navigateWeb() {
     }
 
     try {
+
         const url = new URL(address);
 
         if (!["http:", "https:"].includes(url.protocol)) return;
@@ -1378,9 +2390,9 @@ function navigateWeb() {
 }
 
 
-/* ==================================
+/* =====================================
    TERMINAL
-================================== */
+===================================== */
 
 function runCommand() {
 
@@ -1394,16 +2406,22 @@ function runCommand() {
     let result = "";
 
     if (command === "help") {
-        result = "Befehle: help, about, version, clear, date";
+        result = "Befehle: help, about, version, clear, date, user, files";
     }
     else if (command === "about") {
         result = "NEXUS OS - Web Operating System";
     }
     else if (command === "version") {
-        result = "NEXUS OS 0.2";
+        result = "NEXUS OS 0.3";
     }
     else if (command === "date") {
         result = new Date().toLocaleString("de-DE");
+    }
+    else if (command === "user") {
+        result = "Angemeldet als " + currentUsername;
+    }
+    else if (command === "files") {
+        result = files.length + " Dateien und Ordner gespeichert.";
     }
     else if (command === "clear") {
         output.innerHTML = "";
@@ -1431,9 +2449,62 @@ function runCommand() {
 }
 
 
-/* ==================================
+/* =====================================
+   TASTENKÜRZEL
+===================================== */
+
+document.addEventListener("keydown", event => {
+
+    if (!document.body.classList.contains("authenticated")) return;
+
+    const target = event.target;
+
+    const typing =
+        target &&
+        (
+            target.tagName === "INPUT" ||
+            target.tagName === "TEXTAREA" ||
+            target.isContentEditable
+        );
+
+    // Escape schließt Menüs.
+    if (event.key === "Escape") {
+        document.getElementById("startMenu").style.display = "none";
+        document.getElementById("notificationCenter").style.display = "none";
+        return;
+    }
+
+    // Strg + Alt + T öffnet das Terminal.
+    if (event.ctrlKey && event.altKey && event.key.toLowerCase() === "t") {
+        event.preventDefault();
+        openApp("terminal");
+        return;
+    }
+
+    // Strg + Alt + E öffnet den Dateimanager.
+    if (event.ctrlKey && event.altKey && event.key.toLowerCase() === "e") {
+        event.preventDefault();
+        openApp("files");
+        return;
+    }
+
+    // Windows-Taste oder F1 öffnet das Startmenü.
+    if (
+        !typing &&
+        (
+            event.key === "F1" ||
+            event.key === "Meta"
+        )
+    ) {
+        event.preventDefault();
+        toggleStart();
+    }
+});
+
+
+/* =====================================
    UHR
-================================== */
+===================================== */
 
 function updateClock() {
 
@@ -1448,9 +2519,13 @@ function updateClock() {
 }
 
 
-/* ==================================
+/* =====================================
    SYSTEMSTART
-================================== */
+===================================== */
+
+renderAppGrid();
+
+renderNotifications();
 
 setAuthMode("login");
 
