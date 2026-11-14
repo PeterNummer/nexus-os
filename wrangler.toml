@@ -1,4 +1,4 @@
-name = "nexus-os"
+name = "thyqora-os"
 main = "src/index.js"
 compatibility_date = "2026-11-13"
 
