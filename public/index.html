@@ -475,6 +475,13 @@ body.authenticated #authScreen {
 .monitor-card small { display:block; color:#a9bfd8; margin-bottom:7px; }
 .monitor-card strong { display:block; font-size:19px; overflow-wrap:anywhere; }
 .monitor-note { color:#a9bfd8; font-size:12px; line-height:1.5; margin:0; }
+.manager-list, .store-list { display:flex; flex-direction:column; gap:9px; }
+.manager-row, .store-row { display:flex; align-items:center; gap:12px; padding:12px; background:#ffffff0d; border:1px solid #ffffff20; border-radius:9px; }
+.manager-row .app-meta, .store-row .app-meta { flex:1; min-width:0; }
+.manager-row small, .store-row small { display:block; color:#a9bfd8; margin-top:4px; }
+.manager-row .app-symbol, .store-row .app-symbol { font-size:25px; width:34px; text-align:center; }
+.manager-row button, .store-row button { margin:0; white-space:nowrap; }
+.store-section-title { margin:18px 0 8px; color:#a9c9ed; font-size:14px; }
 
 .window-content button,
 .window-content input,
@@ -762,6 +769,16 @@ body.authenticated #authScreen {
         <p>Systemmonitor</p>
     </div>
 
+    <div class="desktop-icon" onclick="openApp('taskmanager')">
+        <div class="symbol">🗂️</div>
+        <p>Task-Manager</p>
+    </div>
+
+    <div class="desktop-icon" onclick="openApp('appcenter')">
+        <div class="symbol">🛍️</div>
+        <p>App-Center</p>
+    </div>
+
     <div class="desktop-icon" onclick="openApp('browser')">
         <div class="symbol">🌐</div>
         <p>Browser</p>
@@ -893,6 +910,8 @@ const wallpapers = {
 
 const apps = {
     monitor: {title:"Systemmonitor",icon:"📊"},
+    taskmanager: {title:"Task-Manager",icon:"🗂️"},
+    appcenter: {title:"App-Center",icon:"🛍️"},
     browser: {title:"Browser",icon:"🌐"},
     settings: {title:"Einstellungen",icon:"⚙️"},
     terminal: {title:"Terminal",icon:"⌨️"},
@@ -1971,6 +1990,16 @@ function getAppContent(app) {
         return systemMonitorContent();
     }
 
+    if (app === "taskmanager") {
+        setTimeout(renderTaskManager, 0);
+        return taskManagerContent();
+    }
+
+    if (app === "appcenter") {
+        setTimeout(renderAppCenter, 0);
+        return appCenterContent();
+    }
+
     if (app === "settings") return settingsContent();
 
     if (app === "browser") {
@@ -2523,6 +2552,106 @@ function systemMonitorContent() {
     `;
 }
 
+function taskManagerContent() {
+    return `
+        <div class="system-monitor">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+                <div>
+                    <h2 style="margin:0">🗂️ Task-Manager</h2>
+                    <p class="monitor-note">Verwalte geöffnete Fenster in THYQORA OS.</p>
+                </div>
+                <button type="button" onclick="renderTaskManager()">⟳ Aktualisieren</button>
+            </div>
+            <div id="taskManagerSummary" class="monitor-note"></div>
+            <div id="taskManagerList" class="manager-list"></div>
+            <p class="monitor-note">Hinweis: Hier werden nur Apps innerhalb von THYQORA OS verwaltet, keine Windows-Programme oder Hintergrundprozesse.</p>
+        </div>
+    `;
+}
+
+function renderTaskManager() {
+    const list = document.getElementById("taskManagerList");
+    const summary = document.getElementById("taskManagerSummary");
+    if (!list || !summary) return;
+
+    const names = Object.keys(windows);
+    summary.textContent = names.length + (names.length === 1 ? " geöffnetes Fenster" : " geöffnete Fenster");
+    list.innerHTML = "";
+
+    if (!names.length) {
+        list.innerHTML = '<div class="empty-state">Es sind keine Apps geöffnet.</div>';
+        return;
+    }
+
+    names.forEach(name => {
+        const data = windows[name];
+        const app = apps[name];
+        if (!data || !app) return;
+
+        const row = document.createElement("div");
+        row.className = "manager-row";
+        row.innerHTML = `
+            <div class="app-symbol">${app.icon}</div>
+            <div class="app-meta">
+                <strong>${escapeHTML(app.title)}</strong>
+                <small>${data.minimized ? "Minimiert" : (name === activeWindow ? "Aktiv" : "Geöffnet")}</small>
+            </div>
+            <button type="button" data-action="focus">Öffnen</button>
+            <button type="button" data-action="close">Schließen</button>
+        `;
+        row.querySelector('[data-action="focus"]').onclick = () => {
+            restoreWindow(name);
+            renderTaskManager();
+        };
+        row.querySelector('[data-action="close"]').onclick = () => {
+            closeWindow(name);
+            renderTaskManager();
+        };
+        list.appendChild(row);
+    });
+}
+
+function appCenterContent() {
+    return `
+        <div class="system-monitor">
+            <div>
+                <h2 style="margin:0">🛍️ App-Center</h2>
+                <p class="monitor-note">Apps und Funktionen von THYQORA OS an einem Ort.</p>
+            </div>
+            <h3 class="store-section-title">Installierte Apps</h3>
+            <div id="appCenterInstalled" class="store-list"></div>
+            <h3 class="store-section-title">In Planung</h3>
+            <div class="store-list">
+                <div class="store-row"><div class="app-symbol">📅</div><div class="app-meta"><strong>Kalender</strong><small>Termine und Erinnerungen</small></div><span class="monitor-note">Demnächst</span></div>
+                <div class="store-row"><div class="app-symbol">📥</div><div class="app-meta"><strong>Download-Manager</strong><small>Downloads im Blick behalten</small></div><span class="monitor-note">Demnächst</span></div>
+                <div class="store-row"><div class="app-symbol">📋</div><div class="app-meta"><strong>Zwischenablage</strong><small>Kopierte Texte wiederfinden</small></div><span class="monitor-note">Demnächst</span></div>
+            </div>
+            <p class="monitor-note">Das App-Center zeigt aktuell die integrierten Apps und geplante Erweiterungen. Neue Apps werden erst als installierbar angezeigt, wenn ihre Funktionen tatsächlich verfügbar sind.</p>
+        </div>
+    `;
+}
+
+function renderAppCenter() {
+    const list = document.getElementById("appCenterInstalled");
+    if (!list) return;
+    list.innerHTML = "";
+
+    Object.entries(apps).filter(([id]) => id !== "appcenter").forEach(([id, app]) => {
+        const row = document.createElement("div");
+        row.className = "store-row";
+        row.innerHTML = `
+            <div class="app-symbol">${app.icon}</div>
+            <div class="app-meta">
+                <strong>${escapeHTML(app.title)}</strong>
+                <small>In THYQORA OS verfügbar</small>
+            </div>
+            <button type="button">Öffnen</button>
+        `;
+        row.querySelector("button").onclick = () => openApp(id);
+        list.appendChild(row);
+    });
+}
+
 function formatSessionUptime() {
     const total = Math.floor(performance.now() / 1000);
     const hours = Math.floor(total / 3600);
@@ -2689,8 +2818,9 @@ function runCommand() {
         result = args;
     } else if (name.toLowerCase() === "open") {
         const target = args.toLowerCase();
-        const aliases = {systemmonitor:"monitor", monitor:"monitor", browser:"browser",
-            einstellungen:"settings", settings:"settings", terminal:"terminal", about:"about"};
+        const aliases = {systemmonitor:"monitor", monitor:"monitor", taskmanager:"taskmanager",
+            "task-manager":"taskmanager", appcenter:"appcenter", "app-center":"appcenter",
+            browser:"browser", einstellungen:"settings", settings:"settings", terminal:"terminal", about:"about"};
         const app = aliases[target];
         if (app && apps[app]) {
             result = "Öffne " + apps[app].title + " …";
@@ -2749,10 +2879,10 @@ document.addEventListener("keydown", event => {
         return;
     }
 
-    // Strg + Alt + E öffnet den Dateimanager.
+    // Strg + Alt + E öffnet das App-Center.
     if (event.ctrlKey && event.altKey && event.key.toLowerCase() === "e") {
         event.preventDefault();
-        openApp("files");
+        openApp("appcenter");
         return;
     }
 
