@@ -737,7 +737,7 @@ export default {
       return env.ASSETS.fetch(request);
 
     } catch (error) {
-      console.error("NEXUS API error:", error);
+      console.error("THYQORA API error:", error);
       return json({
         error: "Interner Serverfehler."
       }, 500);
