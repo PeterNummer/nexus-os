@@ -973,7 +973,7 @@ async function cloudSave(key, value) {
         },
         body: JSON.stringify({
             key,
-            value: JSON.stringify(value)
+            value
         })
     });
 
@@ -1001,7 +1001,7 @@ function queueSave(key, value) {
 }
 
 async function saveSettings() {
-    return queueSave("thyqoraASettings", settings);
+    return queueSave("thyqoraSettings", settings);
 }
 
 async function saveFiles() {
@@ -1060,7 +1060,13 @@ async function loadCloudSettings() {
             if (!entry) return null;
 
             try {
-                return JSON.parse(entry.value);
+                const parsed = JSON.parse(entry.value);
+                // Unterstützt sowohl alte doppelt codierte Werte
+                // als auch das korrigierte Speicherformat.
+                if (typeof parsed === "string") {
+                    try { return JSON.parse(parsed); } catch { return parsed; }
+                }
+                return parsed;
             } catch {
                 return entry.value;
             }
