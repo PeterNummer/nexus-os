@@ -5,6 +5,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>THYQORA OS</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="theme-color" content="#07111f">
 
 <!-- QR-Code-Bibliothek -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -67,8 +69,16 @@ button {
 }
 
 .auth-logo {
-    font-size: 55px;
-    color: #56b4ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.auth-logo img {
+    width: 76px;
+    height: 76px;
+    filter: drop-shadow(0 0 18px #1685df88);
 }
 
 .auth-panel h1 {
@@ -605,7 +615,7 @@ body.authenticated #authScreen {
 <div id="authScreen" class="auth-screen">
     <div class="auth-panel">
 
-        <div class="auth-logo">◈</div>
+        <div class="auth-logo"><img src="/logo.svg" alt="THYQORA OS Logo"></div>
         <h1>THYQORA OS</h1>
         <p id="authSubtitle">Melde dich bei deinem THYQORA-Konto an.</p>
 
