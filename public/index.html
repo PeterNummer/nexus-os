@@ -453,6 +453,22 @@ body.authenticated #authScreen {
     flex: 1;
 }
 
+/* THYQORA BROWSER */
+.window-content:has(.thyqora-browser) {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 10px;
+    overflow: hidden;
+}
+.thyqora-browser { display:flex; flex-direction:column; gap:8px; flex:1; min-height:0; }
+.browser-toolbar { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
+.browser-toolbar button { flex:0 0 auto; margin:0; min-width:38px; }
+.browser-toolbar input { flex:1 1 180px; width:auto; max-width:none; min-width:90px; margin:0; }
+.browser-view { position:relative; flex:1; min-height:120px; background:#fff; border:1px solid #ffffff30; border-radius:8px; overflow:hidden; }
+.browser-view iframe { width:100%; height:100%; display:block; border:0; background:white; }
+.browser-status { margin:0; min-height:18px; color:#a9bfd8; font-size:12px; }
+
 .window-content button,
 .window-content input,
 .window-content select {
@@ -1952,11 +1968,23 @@ function getAppContent(app) {
 
     if (app === "browser") {
         return `
-            <h2>🌐 THYQORA Browser</h2>
-            <p>Webadresse eingeben:</p>
-            <input id="webaddress" placeholder="https://example.com">
-            <button onclick="navigateWeb()">Öffnen</button>
-            <p>Webseiten öffnen sich in einem neuen Browser-Tab.</p>
+            <div class="thyqora-browser">
+                <div class="browser-toolbar">
+                    <button type="button" onclick="browserBack()" title="Zurück">←</button>
+                    <button type="button" onclick="browserForward()" title="Vorwärts">→</button>
+                    <button type="button" onclick="browserReload()" title="Neu laden">⟳</button>
+                    <input id="webaddress" type="text" placeholder="Adresse oder Suchbegriff eingeben"
+                           autocomplete="url" onkeydown="if(event.key==='Enter') navigateWeb()">
+                    <button type="button" onclick="navigateWeb()">Los</button>
+                    <button type="button" onclick="browserOpenExternal()" title="In neuem Tab öffnen">↗</button>
+                </div>
+                <div class="browser-view">
+                    <iframe id="browserFrame" title="THYQORA Browser"
+                            sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
+                            referrerpolicy="no-referrer"></iframe>
+                </div>
+                <p class="browser-status" id="browserStatus">Gib eine Webadresse oder einen Suchbegriff ein. Manche Websites erlauben keine Einbettung.</p>
+            </div>
         `;
     }
 
@@ -2399,32 +2427,68 @@ function clearNotifications() {
    BROWSER
 ===================================== */
 
-function navigateWeb() {
+let browserCurrentUrl = "";
 
-    const input = document.getElementById("webaddress");
-
-    if (!input) return;
-
-    let address = input.value.trim();
-
-    if (!address) return;
-
-    if (!/^https?:\/\//i.test(address)) {
-        address = "https://" + address;
+function normalizeBrowserAddress(value) {
+    let address = String(value || "").trim();
+    if (!address) return "";
+    if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(address) &&
+        !/^[\w.-]+\.[a-z]{2,}([/:?#]|$)/i.test(address)) {
+        return "https://www.google.com/search?q=" + encodeURIComponent(address);
     }
+    if (!/^https?:\/\//i.test(address)) address = "https://" + address;
+    const url = new URL(address);
+    if (!["http:", "https:"].includes(url.protocol)) {
+        throw new Error("Nur HTTP- und HTTPS-Adressen sind erlaubt.");
+    }
+    return url.href;
+}
 
+function navigateWeb() {
+    const input = document.getElementById("webaddress");
+    const frame = document.getElementById("browserFrame");
+    const status = document.getElementById("browserStatus");
+    if (!input || !frame) return;
     try {
-
-        const url = new URL(address);
-
-        if (!["http:", "https:"].includes(url.protocol)) return;
-
-        window.open(url.href, "_blank", "noopener,noreferrer");
-
-    } catch {
-        alert("Ungültige Webadresse.");
+        const address = normalizeBrowserAddress(input.value);
+        if (!address) return;
+        browserCurrentUrl = address;
+        input.value = address;
+        if (status) status.textContent = "Lade " + address + " …";
+        frame.src = address;
+    } catch (error) {
+        if (status) status.textContent = error.message || "Ungültige Webadresse.";
     }
 }
+
+function browserBack() {
+    const frame = document.getElementById("browserFrame");
+    try { frame?.contentWindow?.history.back(); } catch {}
+}
+
+function browserForward() {
+    const frame = document.getElementById("browserFrame");
+    try { frame?.contentWindow?.history.forward(); } catch {}
+}
+
+function browserReload() {
+    const frame = document.getElementById("browserFrame");
+    if (!frame) return;
+    if (browserCurrentUrl) frame.src = browserCurrentUrl;
+    else try { frame.contentWindow.location.reload(); } catch {}
+}
+
+function browserOpenExternal() {
+    if (!browserCurrentUrl) { navigateWeb(); return; }
+    window.open(browserCurrentUrl, "_blank", "noopener,noreferrer");
+}
+
+document.addEventListener("load", event => {
+    if (event.target && event.target.id === "browserFrame") {
+        const status = document.getElementById("browserStatus");
+        if (status) status.textContent = "Seite geladen. Falls nichts angezeigt wird, blockiert die Website möglicherweise die Einbettung – nutze ↗.";
+    }
+}, true);
 
 
 /* =====================================
