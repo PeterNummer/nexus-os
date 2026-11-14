@@ -2477,7 +2477,7 @@ function renderDesktop() {
         icon.addEventListener("click", event => {
             event.stopPropagation();
             selectedDesktopApp = id;
-            showDesktopMenu(event.clientX, event.clientY, id);
+            hideDesktopMenu();
         });
         icon.addEventListener("dblclick", event => {
             event.stopPropagation();
@@ -2586,7 +2586,7 @@ function setupDesktopInteractions() {
     desktop.addEventListener("click", event => {
         if (event.target === desktop) {
             selectedDesktopApp = null;
-            showDesktopMenu(event.clientX, event.clientY);
+            hideDesktopMenu();
         }
     });
 
