@@ -2510,7 +2510,7 @@ function systemMonitorContent() {
                 <button type="button" onclick="renderSystemMonitor()">⟳ Aktualisieren</button>
             </div>
             <div class="monitor-grid">
-                <div class="monitor-card"><small>Browser-Auslastung (Schätzung)</small><strong id="monitorCpu">–</strong></div>
+                <div class="monitor-card"><small>Browser-Aufgaben (5 Sek.)</small><strong id="monitorCpu">–</strong></div>
                 <div class="monitor-card"><small>Arbeitsspeicher</small><strong id="monitorRam">–</strong></div>
                 <div class="monitor-card"><small>Browser-Speicher</small><strong id="monitorBrowserMemory">–</strong></div>
                 <div class="monitor-card"><small>Netzwerk</small><strong id="monitorNetwork">–</strong></div>
@@ -2518,7 +2518,7 @@ function systemMonitorContent() {
                 <div class="monitor-card"><small>Laufzeit dieser Sitzung</small><strong id="monitorUptime">–</strong></div>
             </div>
             <p class="monitor-note" id="monitorDetails">Lädt Systeminformationen …</p>
-            <p class="monitor-note">Die Browser-Auslastung ist eine Schätzung der blockierenden JavaScript-Hauptthread-Aufgaben der letzten 5 Sekunden. Sie ist keine Messung der gesamten CPU-Auslastung von Windows. Nicht alle Browser unterstützen diese Messung.</p>
+            <p class="monitor-note">Browser-Aufgaben zeigen eine Schätzung der blockierenden JavaScript-Hauptthread-Aufgaben der letzten 5 Sekunden. Wenn dein Browser diese Messung nicht unterstützt, steht dort „Nicht unterstützt“. Das ist keine Messung der gesamten CPU-Auslastung von Windows. Gerätespeicher und JavaScript-Speicher werden nur angezeigt, wenn der Browser sie freigibt.</p>
         </div>
     `;
 }
@@ -2567,7 +2567,7 @@ function updateBrowserLoadDisplay() {
     if (!cpu) return;
 
     if (!browserLoadObserver) {
-        cpu.textContent = "Nicht messbar";
+        cpu.textContent = "Nicht unterstützt";
         return;
     }
 
@@ -2581,8 +2581,7 @@ function updateBrowserLoadDisplay() {
         return total + Math.max(0, overlapEnd - overlapStart);
     }, 0);
 
-    const percentage = Math.min(100, Math.round(busyTime / 50));
-    cpu.textContent = percentage + " %";
+    cpu.textContent = Math.min(100, Math.round(busyTime / 50)) + " %";
 }
 
 function renderSystemMonitor() {
@@ -2603,14 +2602,14 @@ function renderSystemMonitor() {
         ? nav.hardwareConcurrency + " Kerne (logisch)"
         : "Nicht verfügbar";
 
-    ram.textContent = nav.deviceMemory
+    ram.textContent = Number.isFinite(nav.deviceMemory)
         ? "ca. " + nav.deviceMemory + " GB"
-        : "Nicht freigegeben";
+        : "Vom Browser nicht freigegeben";
 
     const memory = performance.memory;
     browserMemory.textContent = memory
         ? Math.round(memory.usedJSHeapSize / 1048576) + " MB genutzt"
-        : "Nicht verfügbar";
+        : "Vom Browser nicht freigegeben";
 
     network.textContent = nav.onLine ? "Online" : "Offline";
     screenInfo.textContent = screen.width + " × " + screen.height;
