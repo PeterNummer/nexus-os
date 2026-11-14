@@ -920,6 +920,11 @@ const APP_CATALOG = {
         title: "Systemmonitor",
         icon: "📊",
         description: "Zeigt Browser-Auslastung, Speicher, Netzwerk und Sitzungsdaten."
+    },
+    about: {
+        title: "Über THYQORA",
+        icon: "💻",
+        description: "Zeigt Informationen über THYQORA OS und dein Konto."
     }
 };
 let installedApps = [...CORE_APPS];
@@ -2890,7 +2895,10 @@ function runCommand() {
     } else if (command === "language") {
         result = "Browsersprache: " + navigator.language;
     } else if (command === "apps") {
-        result = Object.values(apps).map(app => app.title).join(", ");
+        result = Object.entries(apps)
+            .filter(([id]) => isAppInstalled(id))
+            .map(([, app]) => app.title)
+            .join(", ");
     } else if (name.toLowerCase() === "echo") {
         result = args;
     } else if (name.toLowerCase() === "open") {
