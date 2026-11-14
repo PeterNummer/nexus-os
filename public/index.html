@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NEXUS OS</title>
+<title>THYQORA OS</title>
 
 <!-- QR-Code-Bibliothek -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -606,8 +606,8 @@ body.authenticated #authScreen {
     <div class="auth-panel">
 
         <div class="auth-logo">◈</div>
-        <h1>NEXUS OS</h1>
-        <p id="authSubtitle">Melde dich bei deinem NEXUS-Konto an.</p>
+        <h1>THYQORA OS</h1>
+        <p id="authSubtitle">Melde dich bei deinem THYQORA-Konto an.</p>
 
         <form id="authForm">
 
@@ -734,7 +734,7 @@ body.authenticated #authScreen {
 
 <div class="start-menu" id="startMenu">
 
-    <h2>◈ NEXUS OS</h2>
+    <h2>◈ THYQORA OS</h2>
 
     <input class="search-box"
            id="appSearch"
@@ -843,7 +843,7 @@ const apps = {
     settings: {title:"Einstellungen",icon:"⚙️"},
     terminal: {title:"Terminal",icon:"⌨️"},
     trash: {title:"Papierkorb",icon:"🗑️"},
-    about: {title:"Über NEXUS",icon:"💻"}
+    about: {title:"Über THYQORA",icon:"💻"}
 };
 
 let windows = {};
@@ -898,7 +898,7 @@ function queueSave(key, value) {
     saveQueue = saveQueue
         .then(() => cloudSave(key, value))
         .catch(error => {
-            console.error("NEXUS Cloud:", error);
+            console.error("THYQORA Cloud:", error);
             notify("Cloud-Speicherung fehlgeschlagen", error.message);
         });
 
@@ -906,15 +906,15 @@ function queueSave(key, value) {
 }
 
 async function saveSettings() {
-    return queueSave("nexusSettings", settings);
+    return queueSave("thyqoraASettings", settings);
 }
 
 async function saveFiles() {
-    return queueSave("nexusFiles", files);
+    return queueSave("thyqoraFiles", files);
 }
 
 async function saveTrash() {
-    return queueSave("nexusTrash", trash);
+    return queueSave("thyqoraTrash", trash);
 }
 
 async function loadCloudSettings() {
@@ -936,7 +936,7 @@ async function loadCloudSettings() {
             }
         }
 
-        const loadedSettings = readValue("nexusSettings");
+        const loadedSettings = readValue("thyqoraSettings");
 
         if (loadedSettings && typeof loadedSettings === "object") {
             settings = {
@@ -944,21 +944,21 @@ async function loadCloudSettings() {
                 ...loadedSettings
             };
         } else {
-            // Alte NEXUS-Hintergrund-Einstellung übernehmen.
-            const oldBackground = readValue("nexusBackground");
+            // Alte THYQORA-Hintergrund-Einstellung übernehmen.
+            const oldBackground = readValue("thyqoraBackground");
 
             if (oldBackground) {
                 settings.background = Number(oldBackground);
             }
         }
 
-        const loadedFiles = readValue("nexusFiles");
+        const loadedFiles = readValue("thyqoraFiles");
 
         if (Array.isArray(loadedFiles)) {
             files = loadedFiles;
         }
 
-        const loadedTrash = readValue("nexusTrash");
+        const loadedTrash = readValue("thyqoraTrash");
 
         if (Array.isArray(loadedTrash)) {
             trash = loadedTrash;
@@ -973,7 +973,7 @@ async function loadCloudSettings() {
         await saveFiles();
         await saveTrash();
 
-        notify("Cloud geladen", "Deine NEXUS-Daten wurden geladen.");
+        notify("Cloud geladen", "Deine THYQORA-Daten wurden geladen.");
 
     } catch (error) {
         console.error(error);
@@ -1012,8 +1012,8 @@ function setAuthMode(mode) {
 
     document.getElementById("authSubtitle").textContent =
         mode === "login"
-            ? "Melde dich bei deinem NEXUS-Konto an."
-            : "Erstelle dein persönliches NEXUS-Konto.";
+            ? "Melde dich bei deinem THYQORA-Konto an."
+            : "Erstelle dein persönliches THYQORA-Konto.";
 
     authSubmit.textContent =
         mode === "login" ? "Anmelden" : "Konto erstellen";
@@ -1089,7 +1089,7 @@ function createAuthenticatorQR(secret, username) {
         return;
     }
 
-    const issuer = "NEXUS OS";
+    const issuer = "THYQORA OS";
 
     const account = encodeURIComponent(issuer + ":" + username);
 
@@ -1299,7 +1299,7 @@ async function checkLogin() {
         console.error(error);
 
         authError.textContent =
-            "Verbindung zum NEXUS-Server fehlgeschlagen.";
+            "Verbindung zum THYQORA-Server fehlgeschlagen.";
     }
 }
 
@@ -1466,8 +1466,8 @@ function settingsContent() {
         </div>
 
         <p style="color:#a9b8cc;font-size:12px">
-            Deine Einstellungen werden automatisch in deinem NEXUS-Konto gespeichert.
-            Der Lautstärkeregler ist eine NEXUS-Einstellung und verändert nicht
+            Deine Einstellungen werden automatisch in deinem THYQORA-Konto gespeichert.
+            Der Lautstärkeregler ist eine THYQORA-Einstellung und verändert nicht
             die Windows-Systemlautstärke.
         </p>
     `;
@@ -1620,7 +1620,7 @@ function filesContent() {
         <div id="fileList"></div>
 
         <p style="font-size:11px;color:#9eb1c9">
-            NEXUS Cloud-Dateimanager · Änderungen werden automatisch gespeichert.
+            THYQORA Cloud-Dateimanager · Änderungen werden automatisch gespeichert.
         </p>
     `;
 }
@@ -1921,7 +1921,7 @@ function getAppContent(app) {
 
     if (app === "browser") {
         return `
-            <h2>🌐 NEXUS Browser</h2>
+            <h2>🌐 THYQORA Browser</h2>
             <p>Webadresse eingeben:</p>
             <input id="webaddress" placeholder="https://example.com">
             <button onclick="navigateWeb()">Öffnen</button>
@@ -1933,11 +1933,11 @@ function getAppContent(app) {
         return `
             <div class="terminal">
                 <div id="terminalOutput">
-                    NEXUS TERMINAL [Version 0.3]<br>
+                    THYQORA TERMINAL [Version 0.3]<br>
                     Schreibe help für Befehle.<br><br>
                 </div>
 
-                <span>NEXUS&gt; </span>
+                <span>THYQORA&gt; </span>
 
                 <input id="terminalInput"
                        placeholder="Befehl..."
@@ -1948,7 +1948,7 @@ function getAppContent(app) {
 
     if (app === "about") {
         return `
-            <h2>💻 NEXUS OS</h2>
+            <h2>💻 THYQORA OS</h2>
             <p>Version 0.3</p>
             <p>Ein eigenes browserbasiertes Betriebssystem.</p>
 
@@ -2415,10 +2415,10 @@ function runCommand() {
         result = "Befehle: help, about, version, clear, date, user, files";
     }
     else if (command === "about") {
-        result = "NEXUS OS - Web Operating System";
+        result = "THYQORA OS - Web Operating System";
     }
     else if (command === "version") {
-        result = "NEXUS OS 0.3";
+        result = "THYQORA OS 0.3";
     }
     else if (command === "date") {
         result = new Date().toLocaleString("de-DE");
@@ -2444,7 +2444,7 @@ function runCommand() {
 
     const line = document.createElement("div");
 
-    line.textContent = "NEXUS> " + command + " | " + result;
+    line.textContent = "THYQORA> " + command + " | " + result;
 
     output.appendChild(line);
 
