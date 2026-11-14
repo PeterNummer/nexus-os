@@ -206,6 +206,45 @@ body.authenticated #authScreen {
     padding: 20px;
 }
 
+.desktop-icon.selected {
+    background: #1685df55;
+    outline: 1px solid #70bdff88;
+}
+
+.desktop-icon[draggable="true"] { cursor: grab; }
+
+.desktop-context-menu {
+    position: fixed;
+    z-index: 20000;
+    min-width: 210px;
+    padding: 6px;
+    background: #17243bf5;
+    border: 1px solid #ffffff35;
+    border-radius: 9px;
+    box-shadow: 0 12px 35px #0009;
+    backdrop-filter: blur(18px);
+    display: none;
+}
+
+.desktop-context-menu button {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    color: white;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.desktop-context-menu button:hover { background: #ffffff20; }
+.desktop-context-menu .menu-separator {
+    height: 1px;
+    margin: 5px 3px;
+    background: #ffffff25;
+}
+
 .desktop-icon {
     width: 90px;
     padding: 12px 5px;
@@ -762,39 +801,9 @@ body.authenticated #authScreen {
 
 <!-- DESKTOP -->
 
-<div class="desktop">
+<div class="desktop" id="desktop" aria-label="Desktop"></div>
 
-    <div class="desktop-icon" onclick="openApp('taskmanager')">
-        <div class="symbol">🗂️</div>
-        <p>Task-Manager</p>
-    </div>
-
-    <div class="desktop-icon" onclick="openApp('appcenter')">
-        <div class="symbol">🛍️</div>
-        <p>App-Center</p>
-    </div>
-
-    <div class="desktop-icon" onclick="openApp('browser')">
-        <div class="symbol">🌐</div>
-        <p>Browser</p>
-    </div>
-
-    <div class="desktop-icon" onclick="openApp('settings')">
-        <div class="symbol">⚙️</div>
-        <p>Einstellungen</p>
-    </div>
-
-    <div class="desktop-icon" onclick="openApp('terminal')">
-        <div class="symbol">⌨️</div>
-        <p>Terminal</p>
-    </div>
-
-    <div class="desktop-icon" onclick="openApp('trash')">
-        <div class="symbol">🗑️</div>
-        <p>Papierkorb</p>
-    </div>
-
-</div>
+<div class="desktop-context-menu" id="desktopContextMenu" role="menu"></div>
 
 <!-- STARTMENÜ -->
 
@@ -928,6 +937,9 @@ const APP_CATALOG = {
     }
 };
 let installedApps = [...CORE_APPS];
+const DEFAULT_DESKTOP_SHORTCUTS = ["taskmanager", "appcenter", "browser", "settings", "terminal", "trash"];
+let desktopShortcuts = [...DEFAULT_DESKTOP_SHORTCUTS];
+let selectedDesktopApp = null;
 
 let windows = {};
 let activeWindow = null;
@@ -1002,6 +1014,10 @@ async function saveTrash() {
 
 async function saveInstalledApps() {
     return queueSave("thyqoraInstalledApps", installedApps);
+}
+
+function saveDesktopShortcuts() {
+    return queueSave("thyqoraDesktopShortcuts", desktopShortcuts);
 }
 
 function isAppInstalled(id) {
@@ -1083,7 +1099,13 @@ async function loadCloudSettings() {
             ? [...new Set([...CORE_APPS, ...loadedApps.filter(id => Object.prototype.hasOwnProperty.call(APP_CATALOG, id))])]
             : [...CORE_APPS];
 
+        const loadedShortcuts = readValue("thyqoraDesktopShortcuts");
+        desktopShortcuts = Array.isArray(loadedShortcuts)
+            ? [...new Set(loadedShortcuts.filter(id => id === "trash" || (apps[id] && isAppInstalled(id))))]
+            : [...DEFAULT_DESKTOP_SHORTCUTS];
+
         applySettings();
+        renderDesktop();
 
         cloudReady = true;
 
@@ -1092,6 +1114,7 @@ async function loadCloudSettings() {
         await saveFiles();
         await saveTrash();
         await saveInstalledApps();
+        await saveDesktopShortcuts();
 
         notify("Cloud geladen", "Deine THYQORA-Daten wurden geladen.");
 
@@ -2398,6 +2421,9 @@ function renderAppGrid(filter = "") {
         const button = document.createElement("button");
 
         button.className = "app-item";
+        button.draggable = true;
+        button.dataset.appId = id;
+        button.title = "Zum Desktop ziehen";
 
         button.innerHTML =
             app.icon + "<br>" + escapeHTML(app.title);
@@ -2419,6 +2445,167 @@ function filterApps() {
 
     renderAppGrid(value);
 }
+
+/* =====================================
+   DESKTOP-VERKNÜPFUNGEN & MENÜ
+===================================== */
+
+function renderDesktop() {
+    const desktop = document.getElementById("desktop");
+    if (!desktop) return;
+    desktop.innerHTML = "";
+
+    desktopShortcuts = desktopShortcuts.filter(id =>
+        id === "trash" || (apps[id] && isAppInstalled(id))
+    );
+
+    desktopShortcuts.forEach(id => {
+        const isTrash = id === "trash";
+        const app = isTrash
+            ? { title: "Papierkorb", icon: "🗑️" }
+            : apps[id];
+        if (!app) return;
+
+        const icon = document.createElement("div");
+        icon.className = "desktop-icon";
+        icon.dataset.appId = id;
+        icon.draggable = true;
+        icon.innerHTML = '<div class="symbol"></div><p></p>';
+        icon.querySelector(".symbol").textContent = app.icon;
+        icon.querySelector("p").textContent = app.title;
+
+        icon.addEventListener("click", event => {
+            event.stopPropagation();
+            document.querySelectorAll(".desktop-icon.selected").forEach(el => el.classList.remove("selected"));
+            icon.classList.add("selected");
+            selectedDesktopApp = id;
+        });
+        icon.addEventListener("dblclick", event => {
+            event.stopPropagation();
+            if (id === "trash") openApp("trash");
+            else openApp(id);
+        });
+        icon.addEventListener("contextmenu", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            showDesktopMenu(event.clientX, event.clientY, id);
+        });
+        icon.addEventListener("dragstart", event => {
+            event.dataTransfer.setData("text/plain", id);
+            event.dataTransfer.effectAllowed = "move";
+        });
+        desktop.appendChild(icon);
+    });
+}
+
+function addDesktopShortcut(id) {
+    if (id !== "trash" && (!apps[id] || !isAppInstalled(id))) {
+        notify("Nicht verfügbar", "Installiere die App zuerst im App-Center.");
+        return;
+    }
+    if (desktopShortcuts.includes(id)) {
+        notify("Schon vorhanden", "Diese Verknüpfung liegt bereits auf dem Desktop.");
+        return;
+    }
+    desktopShortcuts.push(id);
+    renderDesktop();
+    saveDesktopShortcuts();
+    notify("Desktop-Verknüpfung", (apps[id]?.title || "Papierkorb") + " wurde hinzugefügt.");
+}
+
+function removeDesktopShortcut(id) {
+    desktopShortcuts = desktopShortcuts.filter(item => item !== id);
+    renderDesktop();
+    saveDesktopShortcuts();
+    hideDesktopMenu();
+    notify("Verknüpfung entfernt", "Die App bleibt installiert.");
+}
+
+function showDesktopMenu(x, y, appId = null) {
+    const menu = document.getElementById("desktopContextMenu");
+    if (!menu) return;
+    const entries = appId
+        ? [
+            ['open', 'Öffnen'],
+            ['remove', 'Vom Desktop entfernen'],
+            ...(Object.prototype.hasOwnProperty.call(APP_CATALOG, appId) ? [['uninstall', 'App deinstallieren']] : [])
+          ]
+        : [
+            ['refresh', 'Aktualisieren'],
+            ['store', 'App-Center öffnen']
+          ];
+
+    menu.innerHTML = entries.map(([action, label], index) =>
+        (index === 1 && !appId ? '<div class="menu-separator"></div>' : '') +
+        '<button type="button" data-action="' + action + '">' + label + '</button>'
+    ).join("");
+
+    menu.style.display = "block";
+    const rect = menu.getBoundingClientRect();
+    menu.style.left = Math.max(6, Math.min(x, innerWidth - rect.width - 6)) + "px";
+    menu.style.top = Math.max(6, Math.min(y, innerHeight - rect.height - 6)) + "px";
+
+    menu.querySelectorAll("button").forEach(button => {
+        button.addEventListener("click", () => {
+            const action = button.dataset.action;
+            hideDesktopMenu();
+            if (action === "open" && appId) appId === "trash" ? openApp("trash") : openApp(appId);
+            if (action === "remove" && appId) removeDesktopShortcut(appId);
+            if (action === "uninstall" && appId) uninstallApp(appId);
+            if (action === "refresh") renderDesktop();
+            if (action === "store") openApp("appcenter");
+        });
+    });
+}
+
+function hideDesktopMenu() {
+    const menu = document.getElementById("desktopContextMenu");
+    if (menu) menu.style.display = "none";
+}
+
+function setupDesktopInteractions() {
+    const desktop = document.getElementById("desktop");
+    const appGrid = document.getElementById("appGrid");
+    if (!desktop || desktop.dataset.eventsReady) return;
+    desktop.dataset.eventsReady = "true";
+
+    desktop.addEventListener("contextmenu", event => {
+        if (event.target.closest(".desktop-icon")) return;
+        event.preventDefault();
+        showDesktopMenu(event.clientX, event.clientY);
+    });
+
+    desktop.addEventListener("dragover", event => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "copy";
+    });
+    desktop.addEventListener("drop", event => {
+        event.preventDefault();
+        const id = event.dataTransfer.getData("text/plain");
+        if (id) addDesktopShortcut(id);
+    });
+    desktop.addEventListener("click", event => {
+        if (event.target === desktop) {
+            document.querySelectorAll(".desktop-icon.selected").forEach(el => el.classList.remove("selected"));
+            selectedDesktopApp = null;
+        }
+    });
+
+    appGrid?.addEventListener("dragstart", event => {
+        const item = event.target.closest(".app-item");
+        if (!item) return;
+        event.dataTransfer.setData("text/plain", item.dataset.appId);
+        event.dataTransfer.effectAllowed = "copy";
+    });
+
+    document.addEventListener("pointerdown", event => {
+        if (!event.target.closest("#desktopContextMenu")) hideDesktopMenu();
+    });
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape") hideDesktopMenu();
+    });
+}
+
 
 function toggleStart() {
 
@@ -3007,6 +3194,8 @@ function updateClock() {
 ===================================== */
 
 renderAppGrid();
+setupDesktopInteractions();
+renderDesktop();
 
 renderNotifications();
 
