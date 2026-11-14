@@ -2510,7 +2510,7 @@ function systemMonitorContent() {
                 <button type="button" onclick="renderSystemMonitor()">⟳ Aktualisieren</button>
             </div>
             <div class="monitor-grid">
-                <div class="monitor-card"><small>CPU / Prozessorkerne</small><strong id="monitorCpu">–</strong></div>
+                <div class="monitor-card"><small>Browser-Auslastung (Schätzung)</small><strong id="monitorCpu">–</strong></div>
                 <div class="monitor-card"><small>Arbeitsspeicher</small><strong id="monitorRam">–</strong></div>
                 <div class="monitor-card"><small>Browser-Speicher</small><strong id="monitorBrowserMemory">–</strong></div>
                 <div class="monitor-card"><small>Netzwerk</small><strong id="monitorNetwork">–</strong></div>
@@ -2518,7 +2518,7 @@ function systemMonitorContent() {
                 <div class="monitor-card"><small>Laufzeit dieser Sitzung</small><strong id="monitorUptime">–</strong></div>
             </div>
             <p class="monitor-note" id="monitorDetails">Lädt Systeminformationen …</p>
-            <p class="monitor-note">Hinweis: Als Web-App hat THYQORA keinen direkten Zugriff auf die echte CPU-Auslastung oder den gesamten Windows-Arbeitsspeicher. Angezeigt werden nur Informationen, die dein Browser freigibt.</p>
+            <p class="monitor-note">Die Browser-Auslastung ist eine Schätzung der blockierenden JavaScript-Hauptthread-Aufgaben der letzten 5 Sekunden. Sie ist keine Messung der gesamten CPU-Auslastung von Windows. Nicht alle Browser unterstützen diese Messung.</p>
         </div>
     `;
 }
@@ -2531,9 +2531,64 @@ function formatSessionUptime() {
     return hours + " h " + minutes + " min " + seconds + " s";
 }
 
+let browserLongTasks = [];
+let browserLoadObserver = null;
+let browserLoadTimer = null;
+
+function startBrowserLoadMeasurement() {
+    if (!browserLoadObserver && "PerformanceObserver" in window) {
+        try {
+            if (PerformanceObserver.supportedEntryTypes?.includes("longtask")) {
+                browserLoadObserver = new PerformanceObserver(list => {
+                    const now = performance.now();
+                    browserLongTasks.push(...list.getEntries().map(entry => ({
+                        start: entry.startTime,
+                        duration: entry.duration
+                    })));
+                    browserLongTasks = browserLongTasks.filter(entry =>
+                        entry.start + entry.duration > now - 5000
+                    );
+                });
+                browserLoadObserver.observe({ type: "longtask", buffered: true });
+            }
+        } catch (error) {
+            browserLoadObserver = null;
+        }
+    }
+
+    if (!browserLoadTimer) {
+        browserLoadTimer = setInterval(updateBrowserLoadDisplay, 1000);
+    }
+    updateBrowserLoadDisplay();
+}
+
+function updateBrowserLoadDisplay() {
+    const cpu = document.getElementById("monitorCpu");
+    if (!cpu) return;
+
+    if (!browserLoadObserver) {
+        cpu.textContent = "Nicht messbar";
+        return;
+    }
+
+    const now = performance.now();
+    browserLongTasks = browserLongTasks.filter(entry =>
+        entry.start + entry.duration > now - 5000
+    );
+    const busyTime = browserLongTasks.reduce((total, entry) => {
+        const overlapStart = Math.max(entry.start, now - 5000);
+        const overlapEnd = Math.min(entry.start + entry.duration, now);
+        return total + Math.max(0, overlapEnd - overlapStart);
+    }, 0);
+
+    const percentage = Math.min(100, Math.round(busyTime / 50));
+    cpu.textContent = percentage + " %";
+}
+
 function renderSystemMonitor() {
     const cpu = document.getElementById("monitorCpu");
     if (!cpu) return;
+    startBrowserLoadMeasurement();
 
     const ram = document.getElementById("monitorRam");
     const browserMemory = document.getElementById("monitorBrowserMemory");
