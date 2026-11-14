@@ -250,11 +250,20 @@ body.authenticated #authScreen {
     border: none;
     background: transparent;
     color: white;
-    font-size: 22px;
     width: 43px;
     height: 43px;
     border-radius: 9px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+}
+
+.task-button img {
+    width: 31px;
+    height: 31px;
+    display: block;
 }
 
 .task-button:hover,
@@ -321,6 +330,15 @@ body.authenticated #authScreen {
 
 .start-menu h2 {
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.start-menu h2 img {
+    width: 38px;
+    height: 38px;
+    filter: drop-shadow(0 0 10px #1685df88);
 }
 
 .search-box {
@@ -747,7 +765,7 @@ body.authenticated #authScreen {
 
 <div class="start-menu" id="startMenu">
 
-    <h2>◈ THYQORA OS</h2>
+    <h2><img src="/logo.svg" alt=""> THYQORA OS</h2>
 
     <input class="search-box"
            id="appSearch"
@@ -778,7 +796,7 @@ body.authenticated #authScreen {
 <div class="taskbar">
 
     <button class="task-button" onclick="toggleStart()" title="Startmenü">
-        ⊞
+        <img src="/logo.svg" alt="THYQORA OS">
     </button>
 
     <div class="open-apps" id="openApps"></div>
