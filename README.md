@@ -1,2 +1,2 @@
-# nexus-os
-NEXUS OS - My personal web operating system
+# thyqora-os
+THYQORA OS - My personal web operating system
