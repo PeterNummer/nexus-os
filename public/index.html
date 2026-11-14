@@ -469,6 +469,13 @@ body.authenticated #authScreen {
 .browser-view iframe { width:100%; height:100%; min-height:100%; display:block; border:0; background:white; }
 .browser-status { flex:0 0 auto; margin:0; min-height:18px; color:#a9bfd8; font-size:12px; }
 
+.system-monitor { display:flex; flex-direction:column; gap:12px; }
+.monitor-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:10px; }
+.monitor-card { padding:13px; background:#ffffff0d; border:1px solid #ffffff20; border-radius:9px; min-width:0; }
+.monitor-card small { display:block; color:#a9bfd8; margin-bottom:7px; }
+.monitor-card strong { display:block; font-size:19px; overflow-wrap:anywhere; }
+.monitor-note { color:#a9bfd8; font-size:12px; line-height:1.5; margin:0; }
+
 .window-content button,
 .window-content input,
 .window-content select {
@@ -750,9 +757,9 @@ body.authenticated #authScreen {
 
 <div class="desktop">
 
-    <div class="desktop-icon" onclick="openApp('files')">
-        <div class="symbol">📁</div>
-        <p>Dateimanager</p>
+    <div class="desktop-icon" onclick="openApp('monitor')">
+        <div class="symbol">📊</div>
+        <p>Systemmonitor</p>
     </div>
 
     <div class="desktop-icon" onclick="openApp('browser')">
@@ -885,11 +892,10 @@ const wallpapers = {
 };
 
 const apps = {
-    files: {title:"Dateimanager",icon:"📁"},
+    monitor: {title:"Systemmonitor",icon:"📊"},
     browser: {title:"Browser",icon:"🌐"},
     settings: {title:"Einstellungen",icon:"⚙️"},
     terminal: {title:"Terminal",icon:"⌨️"},
-    trash: {title:"Papierkorb",icon:"🗑️"},
     about: {title:"Über THYQORA",icon:"💻"}
 };
 
@@ -1960,9 +1966,10 @@ function emptyTrash() {
 
 function getAppContent(app) {
 
-    if (app === "files") return filesContent();
-
-    if (app === "trash") return trashContent();
+    if (app === "monitor") {
+        setTimeout(renderSystemMonitor, 0);
+        return systemMonitorContent();
+    }
 
     if (app === "settings") return settingsContent();
 
@@ -1992,8 +1999,8 @@ function getAppContent(app) {
         return `
             <div class="terminal">
                 <div id="terminalOutput">
-                    THYQORA TERMINAL [Version 0.3]<br>
-                    Schreibe help für Befehle.<br><br>
+                    THYQORA TERMINAL [Version 0.4]<br>
+                    Schreibe help für alle Befehle.<br><br>
                 </div>
 
                 <span>THYQORA&gt; </span>
@@ -2492,6 +2499,81 @@ document.addEventListener("load", event => {
 
 
 /* =====================================
+   SYSTEMMONITOR
+===================================== */
+
+function systemMonitorContent() {
+    return `
+        <div class="system-monitor">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+                <h2 style="margin:0">📊 Systemmonitor</h2>
+                <button type="button" onclick="renderSystemMonitor()">⟳ Aktualisieren</button>
+            </div>
+            <div class="monitor-grid">
+                <div class="monitor-card"><small>CPU / Prozessorkerne</small><strong id="monitorCpu">–</strong></div>
+                <div class="monitor-card"><small>Arbeitsspeicher</small><strong id="monitorRam">–</strong></div>
+                <div class="monitor-card"><small>Browser-Speicher</small><strong id="monitorBrowserMemory">–</strong></div>
+                <div class="monitor-card"><small>Netzwerk</small><strong id="monitorNetwork">–</strong></div>
+                <div class="monitor-card"><small>Bildschirm</small><strong id="monitorScreen">–</strong></div>
+                <div class="monitor-card"><small>Laufzeit dieser Sitzung</small><strong id="monitorUptime">–</strong></div>
+            </div>
+            <p class="monitor-note" id="monitorDetails">Lädt Systeminformationen …</p>
+            <p class="monitor-note">Hinweis: Als Web-App hat THYQORA keinen direkten Zugriff auf die echte CPU-Auslastung oder den gesamten Windows-Arbeitsspeicher. Angezeigt werden nur Informationen, die dein Browser freigibt.</p>
+        </div>
+    `;
+}
+
+function formatSessionUptime() {
+    const total = Math.floor(performance.now() / 1000);
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+    return hours + " h " + minutes + " min " + seconds + " s";
+}
+
+function renderSystemMonitor() {
+    const cpu = document.getElementById("monitorCpu");
+    if (!cpu) return;
+
+    const ram = document.getElementById("monitorRam");
+    const browserMemory = document.getElementById("monitorBrowserMemory");
+    const network = document.getElementById("monitorNetwork");
+    const screenInfo = document.getElementById("monitorScreen");
+    const uptime = document.getElementById("monitorUptime");
+    const details = document.getElementById("monitorDetails");
+    const nav = navigator;
+    const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
+
+    cpu.textContent = nav.hardwareConcurrency
+        ? nav.hardwareConcurrency + " Kerne (logisch)"
+        : "Nicht verfügbar";
+
+    ram.textContent = nav.deviceMemory
+        ? "ca. " + nav.deviceMemory + " GB"
+        : "Nicht freigegeben";
+
+    const memory = performance.memory;
+    browserMemory.textContent = memory
+        ? Math.round(memory.usedJSHeapSize / 1048576) + " MB genutzt"
+        : "Nicht verfügbar";
+
+    network.textContent = nav.onLine ? "Online" : "Offline";
+    screenInfo.textContent = screen.width + " × " + screen.height;
+    uptime.textContent = formatSessionUptime();
+
+    const connectionText = connection
+        ? "Verbindung: " + (connection.effectiveType || "unbekannt") +
+          (connection.downlink ? " · " + connection.downlink + " Mbit/s" : "")
+        : "Verbindungstyp wird vom Browser nicht freigegeben.";
+
+    details.textContent =
+        "Browser: " + nav.userAgent +
+        " · Sprache: " + nav.language +
+        " · " + connectionText;
+}
+
+
+/* =====================================
    TERMINAL
 ===================================== */
 
@@ -2499,54 +2581,85 @@ function runCommand() {
 
     const input = document.getElementById("terminalInput");
     const output = document.getElementById("terminalOutput");
-
     if (!input || !output) return;
 
-    const command = input.value.trim().toLowerCase();
-
+    const raw = input.value.trim();
+    const command = raw.toLowerCase();
+    const [name, ...argumentParts] = raw.split(/\\s+/);
+    const args = argumentParts.join(" ");
     let result = "";
 
-    if (command === "help") {
-        result = "Befehle: help, about, version, clear, date, user, files";
-    }
-    else if (command === "about") {
-        result = "THYQORA OS - Web Operating System";
-    }
-    else if (command === "version") {
-        result = "THYQORA OS 0.3";
-    }
-    else if (command === "date") {
-        result = new Date().toLocaleString("de-DE");
-    }
-    else if (command === "user") {
-        result = "Angemeldet als " + currentUsername;
-    }
-    else if (command === "files") {
-        result = files.length + " Dateien und Ordner gespeichert.";
-    }
-    else if (command === "clear") {
+    if (!raw) return;
+
+    if (command === "clear" || command === "cls") {
         output.innerHTML = "";
         input.value = "";
         return;
+    } else if (command === "help") {
+        result = "Verfügbare Befehle:\nhelp, about, version, date, time, user, whoami, uptime, sysinfo, memory, network, screen, language, apps, open <app>, echo <text>, clear / cls";
+    } else if (command === "about") {
+        result = "THYQORA OS – ein browserbasiertes Betriebssystem.";
+    } else if (command === "version") {
+        result = "THYQORA OS Version 0.4";
+    } else if (command === "date") {
+        result = new Date().toLocaleDateString("de-DE");
+    } else if (command === "time") {
+        result = new Date().toLocaleTimeString("de-DE");
+    } else if (command === "user" || command === "whoami") {
+        result = "Angemeldet als " + (currentUsername || "unbekannt");
+    } else if (command === "uptime") {
+        result = "Diese Sitzung läuft seit " + formatSessionUptime() + ".";
+    } else if (command === "sysinfo" || command === "system") {
+        result = "THYQORA OS 0.4 | Browser: " + navigator.userAgent +
+            " | " + navigator.hardwareConcurrency + " logische CPU-Kerne" +
+            " | Bildschirm: " + screen.width + "x" + screen.height;
+    } else if (command === "memory" || command === "ram") {
+        result = navigator.deviceMemory
+            ? "Vom Browser gemeldeter Gerätespeicher: ca. " + navigator.deviceMemory + " GB."
+            : "Der Browser gibt die Gerätespeichergröße nicht frei.";
+        if (performance.memory) {
+            result += " JavaScript-Speicher: " +
+                Math.round(performance.memory.usedJSHeapSize / 1048576) + " MB genutzt.";
+        }
+    } else if (command === "network") {
+        const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        result = (navigator.onLine ? "Online" : "Offline") +
+            (conn && conn.effectiveType ? " | Verbindungstyp: " + conn.effectiveType : "");
+    } else if (command === "screen") {
+        result = screen.width + " x " + screen.height + " Pixel.";
+    } else if (command === "language") {
+        result = "Browsersprache: " + navigator.language;
+    } else if (command === "apps") {
+        result = Object.values(apps).map(app => app.title).join(", ");
+    } else if (name.toLowerCase() === "echo") {
+        result = args;
+    } else if (name.toLowerCase() === "open") {
+        const target = args.toLowerCase();
+        const aliases = {systemmonitor:"monitor", monitor:"monitor", browser:"browser",
+            einstellungen:"settings", settings:"settings", terminal:"terminal", about:"about"};
+        const app = aliases[target];
+        if (app && apps[app]) {
+            result = "Öffne " + apps[app].title + " …";
+            input.value = "";
+            appendTerminalLine(output, raw, result);
+            openApp(app);
+            return;
+        }
+        result = "App nicht gefunden. Nutze: apps";
+    } else {
+        result = "Unbekannter Befehl: " + raw + " – Schreibe help für eine Liste.";
     }
-    else if (command === "") {
-        input.value = "";
-        return;
-    }
-    else {
-        result = "Unbekannter Befehl: " + command;
-    }
 
-    const line = document.createElement("div");
-
-    line.textContent = "THYQORA> " + command + " | " + result;
-
-    output.appendChild(line);
-
+    appendTerminalLine(output, raw, result);
     input.value = "";
+}
 
-    output.parentElement.scrollTop =
-        output.parentElement.scrollHeight;
+function appendTerminalLine(output, command, result) {
+    const line = document.createElement("div");
+    line.style.whiteSpace = "pre-wrap";
+    line.textContent = "THYQORA> " + command + (result ? " | " + result : "");
+    output.appendChild(line);
+    output.parentElement.scrollTop = output.parentElement.scrollHeight;
 }
 
 
