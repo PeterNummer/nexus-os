@@ -923,7 +923,7 @@ const apps = {
 };
 
 // System-Apps bleiben immer installiert. Optionale Apps werden pro Konto gespeichert.
-const CORE_APPS = ["taskmanager", "appcenter", "browser", "settings", "terminal", "about"];
+const CORE_APPS = ["taskmanager", "appcenter", "browser", "settings", "terminal"];
 const APP_CATALOG = {
     monitor: {
         title: "Systemmonitor",
@@ -2476,9 +2476,8 @@ function renderDesktop() {
 
         icon.addEventListener("click", event => {
             event.stopPropagation();
-            document.querySelectorAll(".desktop-icon.selected").forEach(el => el.classList.remove("selected"));
-            icon.classList.add("selected");
             selectedDesktopApp = id;
+            showDesktopMenu(event.clientX, event.clientY, id);
         });
         icon.addEventListener("dblclick", event => {
             event.stopPropagation();
@@ -2586,8 +2585,8 @@ function setupDesktopInteractions() {
     });
     desktop.addEventListener("click", event => {
         if (event.target === desktop) {
-            document.querySelectorAll(".desktop-icon.selected").forEach(el => el.classList.remove("selected"));
             selectedDesktopApp = null;
+            showDesktopMenu(event.clientX, event.clientY);
         }
     });
 
